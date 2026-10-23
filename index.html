@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yinna's 智慧財務規劃與股市模擬器</title>
+    <title>Yinna's -小工具 智慧財務規劃與股市模擬器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -13,45 +13,11 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Noto Sans TC"', 'Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        emerald: {
-                            400: '#34d399',
-                            500: '#10b981',
-                            600: '#059669',
-                            900: '#064e3b',
-                        },
-                        amber: {
-                            400: '#fbbf24',
-                            500: '#f59e0b',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        input[type=range] {
-            accent-color: #10b981;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
+        input[type=range] { accent-color: #10b981; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .glass-panel {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
@@ -74,15 +40,12 @@
                 </div>
                 <div>
                     <h1 class="text-base sm:text-lg font-bold text-white leading-tight flex items-center gap-2">
-                        Yinna's 智慧財務規劃與股市模擬器
+                        Yinna's 模擬器
                     </h1>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2">
-                <button id="toggle-key-panel-btn" class="px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-colors flex items-center gap-1.5 border border-amber-500/30 cursor-pointer">
-                    <i class="fa-solid fa-key"></i> <span class="hidden sm:inline">設定 API Key</span>
-                </button>
                 <button id="reset-btn" class="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-700 cursor-pointer">
                     <i class="fa-solid fa-rotate-left"></i> <span class="hidden sm:inline">重置資料</span>
                 </button>
@@ -90,124 +53,78 @@
         </div>
     </header>
 
-    <!-- API Key Config Bar (Collapsible) -->
-    <div id="key-config-panel" class="bg-slate-900 border-b border-slate-800 p-4 transition-all">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
-            <div class="flex items-center gap-2 text-slate-300">
-                <i class="fa-solid fa-shield-halved text-amber-400 text-base"></i>
-                <span>Google Gemini API Key 設定（可選，如未設定系統將自動切換為本機試算引擎）：</span>
-            </div>
-            <div class="flex items-center gap-2 flex-1 max-w-md">
-                <input type="password" id="user-api-key-input" placeholder="貼上 Gemini API Key (可選)" class="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
-                <button id="save-api-key-btn" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer shrink-0">
-                    儲存 Key
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         <!-- Stat Dashboard Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            
-            <!-- Income Card -->
             <div id="open-income-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-emerald-500/50 transition-all group">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-400 transition-colors">每月稅後總收入</span>
-                </div>
-                <div class="mt-2">
-                    <span id="dash-income" class="text-xl font-black text-white">NT$ 0</span>
-                </div>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-400">每月稅後總收入</span>
+                <div class="mt-2"><span id="dash-income" class="text-xl font-black text-white">NT$ 0</span></div>
             </div>
 
-            <!-- Total Expenses Card -->
             <div id="open-expense-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-rose-500/50 transition-all group">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-400 transition-colors">固定必要支出</span>
-                </div>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-400">固定必要支出</span>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-expenses" class="text-xl font-black text-rose-400">NT$ 0</span>
                     <span id="ratio-expenses" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">0%</span>
                 </div>
             </div>
 
-            <!-- Reserve Funds Card -->
             <div id="open-reserve-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-amber-500/50 transition-all group">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-400 transition-colors">預備金撥入</span>
-                </div>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-400">預備金撥入</span>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-reserves" class="text-xl font-black text-amber-400">NT$ 0</span>
                     <span id="ratio-reserves" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">0%</span>
                 </div>
             </div>
 
-            <!-- Savings & Investment Card -->
             <div id="open-invest-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-indigo-500/50 transition-all group">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-400 transition-colors">長期儲蓄/投資</span>
-                </div>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-400">長期儲蓄/投資</span>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-invest" class="text-xl font-black text-indigo-400">NT$ 0</span>
                     <span id="ratio-invest" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">0%</span>
                 </div>
             </div>
 
-            <!-- Free Disposable Card -->
             <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-4 shadow-xl text-white">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-emerald-100 uppercase tracking-wider">自由支配零用金</span>
-                    <div class="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center text-sm backdrop-blur-sm">
-                        <i class="fa-solid fa-wallet"></i>
-                    </div>
+                    <i class="fa-solid fa-wallet"></i>
                 </div>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-disposable" class="text-xl font-black text-white">NT$ 0</span>
                     <span id="ratio-disposable" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white/20 text-white">0%</span>
                 </div>
-                <p class="text-[11px] text-emerald-100/80 mt-1">扣除所有項目後剩餘</p>
             </div>
-
         </div>
 
-        <!-- Allocation Chart & Financial Structure Section -->
+        <!-- Allocation Chart Section -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            <!-- Doughnut Chart Card (6 cols) -->
             <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-pie text-emerald-400"></i> 每月財務比例分布圖
                 </h3>
-
                 <div class="relative h-64 w-full flex items-center justify-center">
                     <canvas id="allocation-chart"></canvas>
                 </div>
-
-                <!-- Breakdown Table -->
                 <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800">
                     <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>固定支出：</span>
-                        <span id="chart-pct-expenses" class="font-bold">0%</span>
+                        <span>固定支出：</span><span id="chart-pct-expenses" class="font-bold">0%</span>
                     </div>
                     <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>預備金：</span>
-                        <span id="chart-pct-reserves" class="font-bold">0%</span>
+                        <span>預備金：</span><span id="chart-pct-reserves" class="font-bold">0%</span>
                     </div>
                     <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>長期投資：</span>
-                        <span id="chart-pct-invest" class="font-bold">0%</span>
+                        <span>長期投資：</span><span id="chart-pct-invest" class="font-bold">0%</span>
                     </div>
                     <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>自由零用：</span>
-                        <span id="chart-pct-disposable" class="font-bold">0%</span>
+                        <span>自由零用：</span><span id="chart-pct-disposable" class="font-bold">0%</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Advice Box (6 cols) -->
-            <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+            <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
                 <div>
                     <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
                         <i class="fa-solid fa-shield-halved text-teal-400"></i> 財務健康診斷報告
@@ -216,519 +133,112 @@
                         計算中...
                     </div>
                 </div>
-
-                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
-                    <span>💡 小提示：點擊上方任一統計卡片，即可開啟彈窗進行細項增減。</span>
-                </div>
             </div>
-
         </div>
 
-        <!-- Section 3: Multi-Asset Portfolio Investment Simulator -->
+        <!-- Simulator Section -->
         <div class="glass-panel rounded-2xl p-6 shadow-xl space-y-6 border border-emerald-500/20">
-            
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
                     <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> 多標的投資組合與複利模擬器
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">自訂多個定期定額投入的股票/ETF，系統自動計算年化報酬率並同步試算資產增長</p>
+                    <p class="text-xs text-slate-400 mt-0.5">後端 Express 代理安全連線，自動分析年化報酬率與資產成長</p>
                 </div>
-
                 <div class="flex items-center gap-2">
-                    <button id="sync-invest-btn" class="px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg transition-colors border border-indigo-500/30 cursor-pointer">
-                        平均平分「長期儲蓄」
-                    </button>
-                    <button id="sync-disposable-btn" class="px-3 py-1.5 text-xs font-bold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg transition-colors border border-emerald-500/30 cursor-pointer">
-                        平均平分「自由支配金額」
-                    </button>
+                    <button id="sync-invest-btn" class="px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg border border-indigo-500/30 cursor-pointer">平均平分「長期儲蓄」</button>
+                    <button id="sync-disposable-btn" class="px-3 py-1.5 text-xs font-bold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg border border-emerald-500/30 cursor-pointer">平均平分「自由支配」</button>
                 </div>
             </div>
 
-            <!-- AI / Local Asset Multi-Search -->
-            <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/60 p-5 rounded-2xl border border-emerald-500/30 space-y-4">
-                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                    <div class="relative flex-1">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </span>
-                        <input type="text" id="ai-ticker-input" value="00878" placeholder="輸入股票代號加入組合（例：0050, 0056, 00878, 2603, NVDA, QQQ）" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <button id="ai-analyze-btn" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+            <!-- Search Bar -->
+            <div class="bg-slate-900 p-5 rounded-2xl border border-emerald-500/30">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="ai-ticker-input" value="00878" placeholder="輸入股票代號（例：0050, 00878, 2603, 2618, NVDA, QQQ）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                    <button id="ai-analyze-btn" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer">
                         <i class="fa-solid fa-plus"></i> 分析並加入組合
                     </button>
                 </div>
             </div>
 
-            <!-- Multi-Asset Monthly Investment Allocation Table -->
+            <!-- Portfolio Rows -->
             <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">每月投資組合分配明細</span>
+                    <span class="text-xs font-bold text-slate-300">每月投資組合分配明細</span>
                     <span class="text-xs font-bold text-emerald-400">每月總投資額：<span id="total-portfolio-monthly" class="text-sm font-black text-white">NT$ 0</span></span>
                 </div>
-
-                <div id="portfolio-list-container" class="space-y-3">
-                    <!-- Dynamic Portfolio Rows -->
-                </div>
+                <div id="portfolio-list-container" class="space-y-3"></div>
             </div>
 
-            <!-- Horizon Slider -->
+            <!-- Slider -->
             <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">投資時間年限</label>
+                    <label class="text-xs font-bold text-slate-300">投資時間年限</label>
                     <span id="years-display" class="text-xs font-extrabold text-teal-400 bg-teal-500/10 border border-teal-500/30 px-2.5 py-0.5 rounded-full">20 年</span>
                 </div>
-                <input type="range" id="sim-years-slider" min="1" max="40" step="1" value="20" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                <div class="flex justify-between text-[10px] text-slate-500 px-1">
-                    <span>1年</span>
-                    <span>10年</span>
-                    <span>20年</span>
-                    <span>30年</span>
-                    <span>40年</span>
-                </div>
+                <input type="range" id="sim-years-slider" min="1" max="40" step="1" value="20" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
             </div>
 
-            <!-- Simulation Multi-Asset Comparison Chart (Stacked Bar) -->
+            <!-- Stacked Bar Chart -->
             <div class="relative h-96 w-full pt-2">
                 <canvas id="growth-chart"></canvas>
             </div>
-
         </div>
-
     </main>
-
-    <!-- ================= MODALS ================= -->
-
-    <!-- Income Modal -->
-    <div id="income-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-emerald-500/30">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-sack-dollar text-emerald-400"></i> 每月稅後總收入管理
-                </h3>
-                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div id="income-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
-            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-                <button id="add-income-btn" class="px-3 py-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl transition-colors border border-emerald-500/20 flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> 新增收入來源
-                </button>
-                <div class="text-xs text-slate-400">總收入：<span id="modal-subtotal-incomes" class="font-extrabold text-emerald-400 text-sm">NT$ 0</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Expense Modal -->
-    <div id="expense-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-rose-400"></i> 固定必要支出管理
-                </h3>
-                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div id="expense-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
-            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-                <button id="add-expense-btn" class="px-3 py-1.5 text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-colors border border-rose-500/20 flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> 新增支出項目
-                </button>
-                <div class="text-xs text-slate-400">固定支出小計：<span id="modal-subtotal-expenses" class="font-extrabold text-rose-400 text-sm">NT$ 0</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reserve Modal -->
-    <div id="reserve-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-vault text-amber-400"></i> 預備金撥入管理
-                </h3>
-                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div id="reserve-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
-            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-                <button id="add-reserve-btn" class="px-3 py-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors border border-amber-500/20 flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> 新增預備金項目
-                </button>
-                <div class="text-xs text-slate-400">預備金小計：<span id="modal-subtotal-reserves" class="font-extrabold text-amber-400 text-sm">NT$ 0</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Investment Modal -->
-    <div id="invest-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 border border-indigo-500/30">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-indigo-400"></i> 長期儲蓄 / 投資金額設定
-                </h3>
-                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div class="space-y-3 py-2">
-                <label class="block text-xs font-bold text-slate-300">每月固定投入長期儲蓄與投資金額</label>
-                <div class="relative">
-                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">NT$</span>
-                    <input type="number" id="modal-input-invest" value="15000" min="0" step="1000" class="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-extrabold text-white focus:outline-none focus:border-indigo-500">
-                </div>
-                <p class="text-[11px] text-slate-400">此金額可同步連動下方模擬器進行設定。</p>
-            </div>
-        </div>
-    </div>
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Preset Stock Database to ensure instant accurate results without Billing requirements
-        const stockDatabase = {
-            "00878": { name: "國泰永續高股息", cagr: 8.5, risk: "中低風險" },
-            "0050": { name: "元大台灣50", cagr: 10.2, risk: "中風險" },
-            "0056": { name: "元大高股息", cagr: 7.8, risk: "中低風險" },
-            "00919": { name: "群益台灣精選高息", cagr: 9.0, risk: "中低風險" },
-            "00929": { name: "復華台灣科技優息", cagr: 9.2, risk: "中風險" },
-            "00940": { name: "元大台灣價值高息", cagr: 7.5, risk: "中低風險" },
-            "2603": { name: "長榮海運", cagr: 12.0, risk: "高風險" },
-            "2330": { name: "台積電", cagr: 16.5, risk: "中高風險" },
-            "2317": { name: "鴻海", cagr: 9.5, risk: "中風險" },
-            "2454": { name: "聯發科", cagr: 14.0, risk: "高風險" },
-            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" },
-            "AAPL": { name: "蘋果 (Apple)", cagr: 15.0, risk: "中風險" },
-            "TSLA": { name: "特斯拉 (Tesla)", cagr: 22.0, risk: "高風險" },
-            "QQQ": { name: "納斯達克100 ETF", cagr: 13.5, risk: "中高風險" },
-            "VOO": { name: "標普500 ETF", cagr: 10.5, risk: "中風險" },
-            "BTC": { name: "比特幣", cagr: 35.0, risk: "極高風險" }
-        };
-
-        // Default State Data Structure
         const defaultData = {
-            incomes: [
-                { id: 1, name: "主業薪資", amount: 50000 },
-                { id: 2, name: "副業/接案", amount: 10000 }
-            ],
-            expenses: [
-                { id: 1, name: "房租 / 房貸", amount: 15000 },
-                { id: 2, name: "伙食與日用", amount: 12000 },
-                { id: 3, name: "水電網路費", amount: 2000 },
-                { id: 4, name: "交通費", amount: 2000 }
-            ],
-            reserves: [
-                { id: 1, name: "緊急預備金", amount: 5000 },
-                { id: 2, name: "孝親費 / 社交", amount: 3000 }
-            ],
+            incomes: [{ id: 1, name: "主業薪資", amount: 50000 }],
+            expenses: [{ id: 1, name: "固定支出", amount: 25000 }],
+            reserves: [{ id: 1, name: "緊急預備金", amount: 5000 }],
             investment: 15000,
             simYears: 20,
             assets: [
                 { ticker: "0050", name: "元大台灣50", monthlyAmount: 10000, cagr: 10.2, risk: "中風險" },
-                { ticker: "0056", name: "元大高股息", monthlyAmount: 5000, cagr: 7.8, risk: "中低風險" }
+                { ticker: "00878", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
             ]
         };
 
-        // Load State
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v6')) || JSON.parse(JSON.stringify(defaultData));
-
-        // Chart instances
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v8')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        // DOM Elements
-        const dashIncome = document.getElementById('dash-income');
-        const dashExpenses = document.getElementById('dash-expenses');
-        const ratioExpenses = document.getElementById('ratio-expenses');
-        const dashReserves = document.getElementById('dash-reserves');
-        const ratioReserves = document.getElementById('ratio-reserves');
-        const dashInvest = document.getElementById('dash-invest');
-        const ratioInvest = document.getElementById('ratio-invest');
-        const dashDisposable = document.getElementById('dash-disposable');
-        const ratioDisposable = document.getElementById('ratio-disposable');
+        function saveState() { localStorage.setItem('yinna_budget_state_v8', JSON.stringify(state)); }
+        function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
+        function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
+        function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
+        function getTotalPortfolioMonthly() { return state.assets.reduce((s, i) => s + (Number(i.monthlyAmount)||0), 0); }
+        function formatMoney(amount) { return 'NT$ ' + Number(amount).toLocaleString('zh-TW'); }
 
-        const chartPctExpenses = document.getElementById('chart-pct-expenses');
-        const chartPctReserves = document.getElementById('chart-pct-reserves');
-        const chartPctInvest = document.getElementById('chart-pct-invest');
-        const chartPctDisposable = document.getElementById('chart-pct-disposable');
-        const healthCheckContent = document.getElementById('health-check-content');
-
-        const simYearsSlider = document.getElementById('sim-years-slider');
-        const yearsDisplay = document.getElementById('years-display');
-
-        function saveState() {
-            localStorage.setItem('yinna_budget_state_v6', JSON.stringify(state));
-        }
-
-        function getTotalIncomes() {
-            return state.incomes.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-        }
-
-        function getTotalExpenses() {
-            return state.expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-        }
-
-        function getTotalReserves() {
-            return state.reserves.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-        }
-
-        function getTotalPortfolioMonthly() {
-            return state.assets.reduce((sum, item) => sum + (Number(item.monthlyAmount) || 0), 0);
-        }
-
-        function formatMoney(amount) {
-            return 'NT$ ' + Number(amount).toLocaleString('zh-TW');
-        }
-
-        // Modals Dynamic Lists
-        function renderIncomeList() {
-            const container = document.getElementById('income-list');
-            container.innerHTML = '';
-            state.incomes.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800';
-                row.innerHTML = `
-                    <input type="text" value="${item.name}" placeholder="收入名稱" class="income-name flex-1 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-emerald-500" data-index="${index}">
-                    <div class="relative w-32">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">NT$</span>
-                        <input type="number" value="${item.amount}" min="0" step="500" class="income-amount w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500" data-index="${index}">
-                    </div>
-                    <button class="delete-income-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                `;
-                container.appendChild(row);
-            });
-            document.getElementById('modal-subtotal-incomes').textContent = formatMoney(getTotalIncomes());
-            attachIncomeEvents();
-        }
-
-        function renderExpenseList() {
-            const container = document.getElementById('expense-list');
-            container.innerHTML = '';
-            state.expenses.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800';
-                row.innerHTML = `
-                    <input type="text" value="${item.name}" placeholder="支出名稱" class="expense-name flex-1 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-rose-500" data-index="${index}">
-                    <div class="relative w-32">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">NT$</span>
-                        <input type="number" value="${item.amount}" min="0" step="500" class="expense-amount w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-rose-400 focus:outline-none focus:border-rose-500" data-index="${index}">
-                    </div>
-                    <button class="delete-expense-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                `;
-                container.appendChild(row);
-            });
-            document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses());
-            attachExpenseEvents();
-        }
-
-        function renderReserveList() {
-            const container = document.getElementById('reserve-list');
-            container.innerHTML = '';
-            state.reserves.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800';
-                row.innerHTML = `
-                    <input type="text" value="${item.name}" placeholder="預備金名稱" class="reserve-name flex-1 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500" data-index="${index}">
-                    <div class="relative w-32">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">NT$</span>
-                        <input type="number" value="${item.amount}" min="0" step="500" class="reserve-amount w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-amber-400 focus:outline-none focus:border-amber-500" data-index="${index}">
-                    </div>
-                    <button class="delete-reserve-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                `;
-                container.appendChild(row);
-            });
-            document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves());
-            attachReserveEvents();
-        }
-
-        function attachIncomeEvents() {
-            document.querySelectorAll('.income-name').forEach(el => {
-                el.addEventListener('input', (e) => {
-                    state.incomes[e.target.dataset.index].name = e.target.value;
-                    saveState();
-                    updateAllUI();
-                });
-            });
-            document.querySelectorAll('.income-amount').forEach(el => {
-                el.addEventListener('input', (e) => {
-                    state.incomes[e.target.dataset.index].amount = Number(e.target.value) || 0;
-                    saveState();
-                    document.getElementById('modal-subtotal-incomes').textContent = formatMoney(getTotalIncomes());
-                    updateAllUI();
-                });
-            });
-            document.querySelectorAll('.delete-income-btn').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    const idx = e.currentTarget.dataset.index;
-                    if(state.incomes.length <= 1) return;
-                    state.incomes.splice(idx, 1);
-                    saveState();
-                    renderIncomeList();
-                    updateAllUI();
-                });
-            });
-        }
-
-        function attachExpenseEvents() {
-            document.querySelectorAll('.expense-name').forEach(el => {
-                el.addEventListener('input', (e) => {
-                    state.expenses[e.target.dataset.index].name = e.target.value;
-                    saveState();
-                    updateAllUI();
-                });
-            });
-            document.querySelectorAll('.expense-amount').forEach(el => {
-                el.addEventListener('input', (e) => {
-                    state.expenses[e.target.dataset.index].amount = Number(e.target.value) || 0;
-                    saveState();
-                    document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses());
-                    updateAllUI();
-                });
-            });
-            document.querySelectorAll('.delete-expense-btn').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    const idx = e.currentTarget.dataset.index;
-                    state.expenses.splice(idx, 1);
-                    saveState();
-                    renderExpenseList();
-                    updateAllUI();
-                });
-            });
-        }
-
-        function attachReserveEvents() {
-            document.querySelectorAll('.reserve-name').forEach(el => {
-                el.addEventListener('input', (e) => {
-                    state.reserves[e.target.dataset.index].name = e.target.value;
-                    saveState();
-                    updateAllUI();
-                });
-            });
-            document.querySelectorAll('.reserve-amount').forEach(el => {
-                el.addEventListener('input', (e) => {
-                    state.reserves[e.target.dataset.index].amount = Number(e.target.value) || 0;
-                    saveState();
-                    document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves());
-                    updateAllUI();
-                });
-            });
-            document.querySelectorAll('.delete-reserve-btn').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    const idx = e.currentTarget.dataset.index;
-                    state.reserves.splice(idx, 1);
-                    saveState();
-                    renderReserveList();
-                    updateAllUI();
-                });
-            });
-        }
-
-        document.getElementById('add-income-btn').addEventListener('click', () => {
-            state.incomes.push({ id: Date.now(), name: "新收入來源", amount: 5000 });
-            saveState();
-            renderIncomeList();
-            updateAllUI();
-        });
-
-        document.getElementById('add-expense-btn').addEventListener('click', () => {
-            state.expenses.push({ id: Date.now(), name: "新支出項目", amount: 2000 });
-            saveState();
-            renderExpenseList();
-            updateAllUI();
-        });
-
-        document.getElementById('add-reserve-btn').addEventListener('click', () => {
-            state.reserves.push({ id: Date.now(), name: "新預備金項目", amount: 2000 });
-            saveState();
-            renderReserveList();
-            updateAllUI();
-        });
-
-        document.getElementById('modal-input-invest').addEventListener('input', (e) => {
-            state.investment = Number(e.target.value) || 0;
-            saveState();
-            updateAllUI();
-        });
-
-        // Main UI Update
         function updateAllUI() {
-            const totalInc = getTotalIncomes();
-            const totalExp = getTotalExpenses();
-            const totalRes = getTotalReserves();
-            const totalInv = Number(state.investment) || 0;
+            const inc = getTotalIncomes(), exp = getTotalExpenses(), res = getTotalReserves(), inv = Number(state.investment) || 0;
+            const disp = inc - exp - res - inv;
 
-            const disposable = totalInc - totalExp - totalRes - totalInv;
+            document.getElementById('dash-income').textContent = formatMoney(inc);
+            document.getElementById('dash-expenses').textContent = formatMoney(exp);
+            document.getElementById('dash-reserves').textContent = formatMoney(res);
+            document.getElementById('dash-invest').textContent = formatMoney(inv);
+            document.getElementById('dash-disposable').textContent = formatMoney(disp);
 
-            dashIncome.textContent = formatMoney(totalInc);
-            dashExpenses.textContent = formatMoney(totalExp);
-            dashReserves.textContent = formatMoney(totalRes);
-            dashInvest.textContent = formatMoney(totalInv);
-            dashDisposable.textContent = formatMoney(disposable);
-
-            const pctExp = totalInc > 0 ? ((totalExp / totalInc) * 100).toFixed(1) : 0;
-            const pctRes = totalInc > 0 ? ((totalRes / totalInc) * 100).toFixed(1) : 0;
-            const pctInv = totalInc > 0 ? ((totalInv / totalInc) * 100).toFixed(1) : 0;
-            const pctDisp = totalInc > 0 ? ((disposable / totalInc) * 100).toFixed(1) : 0;
-
-            ratioExpenses.textContent = pctExp + '%';
-            ratioReserves.textContent = pctRes + '%';
-            ratioInvest.textContent = pctInv + '%';
-            ratioDisposable.textContent = pctDisp + '%';
-
-            chartPctExpenses.textContent = pctExp + '% (' + formatMoney(totalExp) + ')';
-            chartPctReserves.textContent = pctRes + '% (' + formatMoney(totalRes) + ')';
-            chartPctInvest.textContent = pctInv + '% (' + formatMoney(totalInv) + ')';
-            chartPctDisposable.textContent = pctDisp + '% (' + formatMoney(disposable) + ')';
-
-            let healthHTML = '';
-            if (totalInc <= 0) {
-                healthHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方收入卡片進行填寫。</p>`;
-            } else {
-                if (disposable < 0) {
-                    healthHTML += `<p class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> 警告：您的總支出與儲蓄配置已超過總收入，呈現透支狀態！</p>`;
-                } else {
-                    healthHTML += `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> 財務收支平衡，每月享有 ${formatMoney(disposable)} 自由支配金。</p>`;
-                }
-                const savingsRate = Number(pctInv) + Number(pctRes);
-                healthHTML += `<p class="text-slate-300 mt-1">💡 目前整體儲蓄與投資佔比為 <span class="font-bold text-white">${savingsRate}%</span>。</p>`;
-            }
-            healthCheckContent.innerHTML = healthHTML;
-
-            // Doughnut Chart starting from 0 deg (12 o'clock), sorted descending clockwise
-            updateDoughnutChart(totalExp, totalRes, totalInv, Math.max(0, disposable));
-
+            updateDoughnutChart(exp, res, inv, Math.max(0, disp));
             renderPortfolioList();
             updateGrowthSimulation();
         }
 
-        // Doughnut Chart (0 Degree Start / Clockwise Descending)
         function updateDoughnutChart(exp, res, inv, disp) {
             const ctx = document.getElementById('allocation-chart').getContext('2d');
-            
             let items = [
                 { label: '固定支出', value: exp, color: '#f43f5e' },
                 { label: '預備金', value: res, color: '#f59e0b' },
                 { label: '長期投資', value: inv, color: '#6366f1' },
                 { label: '自由零用', value: disp, color: '#34d399' }
-            ];
-
-            items.sort((a, b) => b.value - a.value);
-
-            const sortedLabels = items.map(i => i.label);
-            const sortedValues = items.map(i => i.value);
-            const sortedColors = items.map(i => i.color);
+            ].sort((a, b) => b.value - a.value);
 
             if (allocationChart) {
-                allocationChart.data.labels = sortedLabels;
-                allocationChart.data.datasets[0].data = sortedValues;
-                allocationChart.data.datasets[0].backgroundColor = sortedColors;
+                allocationChart.data.labels = items.map(i => i.label);
+                allocationChart.data.datasets[0].data = items.map(i => i.value);
+                allocationChart.data.datasets[0].backgroundColor = items.map(i => i.color);
                 allocationChart.update();
                 return;
             }
@@ -736,44 +246,19 @@
             allocationChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: sortedLabels,
-                    datasets: [{
-                        data: sortedValues,
-                        backgroundColor: sortedColors,
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
+                    labels: items.map(i => i.label),
+                    datasets: [{ data: items.map(i => i.value), backgroundColor: items.map(i => i.color), borderWidth: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ' ' + context.label + ': ' + formatMoney(context.raw);
-                                }
-                            }
-                        }
-                    },
-                    cutout: '70%'
-                }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
             });
         }
 
-        // Render Multi-Asset Rows with Hover Tooltip for CAGR
         function renderPortfolioList() {
             const container = document.getElementById('portfolio-list-container');
             container.innerHTML = '';
 
             if (state.assets.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-6 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl bg-slate-950/40">
-                        <i class="fa-solid fa-folder-open text-base mb-1 block"></i>
-                        目前投資組合中無任何標的，請在上方輸入股票代號新增。
-                    </div>
-                `;
+                container.innerHTML = `<div class="text-center py-6 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">目前無任何標的，請在上方新增。</div>`;
                 document.getElementById('total-portfolio-monthly').textContent = formatMoney(0);
                 return;
             }
@@ -785,28 +270,16 @@
                     <div class="flex items-center gap-2">
                         <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
                         <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
-                        
-                        <!-- CAGR hover tooltip tag -->
                         <div class="relative group/cagr inline-block cursor-help">
-                            <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20 flex items-center gap-1">
-                                CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i>
-                            </span>
-                            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-64 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20 leading-relaxed backdrop-blur-md">
-                                <div class="font-bold text-teal-400 mb-0.5">📊 什麼是 CAGR？</div>
-                                <strong>CAGR（複合年均成長率）</strong> 代表此標的預期平均每年的年化報酬率，已計算資產複利累積效果。
-                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-r border-b border-teal-500/40 rotate-45"></div>
+                            <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i></span>
+                            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-60 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20">
+                                📊 <strong>CAGR（複合年均成長率）</strong> 代表預期年化報酬率（含複利）。
                             </div>
                         </div>
                     </div>
-
                     <div class="flex items-center gap-3">
-                        <div class="relative w-36">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold">NT$</span>
-                            <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500" data-index="${index}">
-                        </div>
-                        <button class="remove-asset-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}">
-                            <i class="fa-solid fa-trash-can text-xs"></i>
-                        </button>
+                        <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-32 px-3 py-1 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400" data-index="${index}">
+                        <button class="remove-asset-btn text-slate-500 hover:text-rose-400 p-1 cursor-pointer" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>
                 `;
                 container.appendChild(row);
@@ -816,8 +289,7 @@
 
             document.querySelectorAll('.asset-amount-input').forEach(el => {
                 el.addEventListener('input', (e) => {
-                    const idx = e.target.dataset.index;
-                    state.assets[idx].monthlyAmount = Number(e.target.value) || 0;
+                    state.assets[e.target.dataset.index].monthlyAmount = Number(e.target.value) || 0;
                     saveState();
                     document.getElementById('total-portfolio-monthly').textContent = formatMoney(getTotalPortfolioMonthly());
                     updateGrowthSimulation();
@@ -826,8 +298,7 @@
 
             document.querySelectorAll('.remove-asset-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const idx = Number(e.currentTarget.dataset.index);
-                    state.assets.splice(idx, 1);
+                    state.assets.splice(Number(e.currentTarget.dataset.index), 1);
                     saveState();
                     renderPortfolioList();
                     updateGrowthSimulation();
@@ -835,48 +306,34 @@
             });
         }
 
-        // Multi-Asset Growth Simulation Chart (Stacked Bar Chart)
         function updateGrowthSimulation() {
-            const years = Number(simYearsSlider.value);
-            yearsDisplay.textContent = years + ' 年';
+            const years = Number(document.getElementById('sim-years-slider').value);
+            document.getElementById('years-display').textContent = years + ' 年';
             state.simYears = years;
             saveState();
 
-            let labels = [];
-            for (let y = 1; y <= years; y++) {
-                labels.push(y + '年');
-            }
-
+            let labels = Array.from({length: years}, (_, i) => (i + 1) + '年');
             const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
 
             let datasets = state.assets.map((asset, idx) => {
                 const monthly = Number(asset.monthlyAmount) || 0;
-                const annualRate = (asset.cagr || 10) / 100;
-                const monthlyRate = annualRate / 12;
-                let currentTotal = 0;
-                let dataPoints = [];
+                const monthlyRate = ((asset.cagr || 10) / 100) / 12;
+                let currentTotal = 0, dataPoints = [];
 
                 for (let y = 1; y <= years; y++) {
-                    for (let m = 1; m <= 12; m++) {
-                        currentTotal = (currentTotal + monthly) * (1 + monthlyRate);
-                    }
+                    for (let m = 1; m <= 12; m++) { currentTotal = (currentTotal + monthly) * (1 + monthlyRate); }
                     dataPoints.push(Math.round(currentTotal));
                 }
 
                 return {
-                    label: `${asset.ticker} (${asset.cagr}%) - 每月 ${formatMoney(monthly)}`,
+                    label: `${asset.ticker} (${asset.cagr}%)`,
                     data: dataPoints,
-                    backgroundColor: colors[idx % colors.length],
-                    borderColor: colors[idx % colors.length],
-                    borderWidth: 1,
-                    borderRadius: 4
+                    backgroundColor: colors[idx % colors.length]
                 };
             });
 
             const ctx = document.getElementById('growth-chart').getContext('2d');
-
             if (growthChart) {
-                growthChart.config.type = 'bar';
                 growthChart.data.labels = labels;
                 growthChart.data.datasets = datasets;
                 growthChart.update();
@@ -885,278 +342,57 @@
 
             growthChart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
+                data: { labels, datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#cbd5e1', font: { size: 11 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ' ' + context.dataset.label + ': ' + formatMoney(context.raw);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            stacked: true,
-                            grid: { display: false },
-                            ticks: { color: '#64748b', font: { size: 10 } }
-                        },
-                        y: {
-                            stacked: true,
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: {
-                                color: '#64748b',
-                                font: { size: 10 },
-                                callback: function(value) {
-                                    if (value >= 10000000) return (value / 10000000).toFixed(1) + '千萬';
-                                    if (value >= 10000) return (value / 10000).toFixed(0) + '萬';
-                                    return value;
-                                }
-                            }
-                        }
-                    }
+                    scales: { x: { stacked: true }, y: { stacked: true } }
                 }
             });
         }
 
-        // Smart Analysis Handler: Works Seamlessly With or Without Key
+        // Call Backend API Endpoint
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
-            const ticker = document.getElementById('ai-ticker-input').value.trim().toUpperCase() || "00878";
+            const ticker = document.getElementById('ai-ticker-input').value.trim();
             const btn = document.getElementById('ai-analyze-btn');
-            
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 分析中...`;
+            if (!ticker) return;
+
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 後端分析中...`;
             btn.disabled = true;
 
-            let finalData = null;
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker })
+                });
 
-            // 1. Check local preset database first
-            if (stockDatabase[ticker]) {
-                const preset = stockDatabase[ticker];
-                finalData = {
-                    ticker: ticker,
-                    name: preset.name,
-                    monthlyAmount: 5000,
-                    cagr: preset.cagr,
-                    risk: preset.risk
-                };
-            }
-
-            // 2. Try Gemini API if key is available in localStorage
-            const savedKey = localStorage.getItem('yinna_gemini_api_key');
-            if (!finalData && savedKey) {
-                try {
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`;
-                    const systemPrompt = "你是一位計量分析師。請針對用戶提供的股票代號或資產進行分析，並回傳純 JSON 格式，包含欄位：{\"ticker\": \"代號大寫\", \"assetName\": \"中文名稱\", \"cagr\": 10.5, \"riskLevel\": \"風險等級\"}";
-                    const userQuery = `請分析標的：${ticker}，估算其合理的長期歷史年化報酬率 CAGR (%) 與中文名稱。`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: userQuery }] }],
-                            systemInstruction: { parts: [{ text: systemPrompt }] },
-                            generationConfig: { responseMimeType: "application/json" }
-                        })
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (jsonText) {
-                            const parsed = JSON.parse(jsonText);
-                            finalData = {
-                                ticker: parsed.ticker.toUpperCase(),
-                                name: parsed.assetName,
-                                monthlyAmount: 5000,
-                                cagr: Number(parsed.cagr) || 8.0,
-                                risk: parsed.riskLevel || "中風險"
-                            };
-                        }
+                if (res.ok) {
+                    const data = await res.json();
+                    const existing = state.assets.find(a => a.ticker.toUpperCase() === data.ticker.toUpperCase());
+                    if (!existing) {
+                        state.assets.push({
+                            ticker: data.ticker,
+                            name: data.name,
+                            monthlyAmount: 5000,
+                            cagr: data.cagr,
+                            risk: data.risk
+                        });
+                        saveState();
+                        renderPortfolioList();
+                        updateGrowthSimulation();
                     }
-                } catch (e) {
-                    console.log("API Fetch failed, using local fallback estimation.");
                 }
-            }
-
-            // 3. Smart local algorithmic estimation fallback
-            if (!finalData) {
-                let estimatedCagr = 8.0;
-                let estimatedName = "優質標的";
-                
-                if (ticker.startsWith("00")) {
-                    estimatedName = "高股息/指數型 ETF";
-                    estimatedCagr = 8.5;
-                } else if (!isNaN(ticker)) {
-                    estimatedName = "台股個股";
-                    estimatedCagr = 10.0;
-                } else {
-                    estimatedName = "美股/外幣資產";
-                    estimatedCagr = 12.0;
-                }
-
-                finalData = {
-                    ticker: ticker,
-                    name: estimatedName,
-                    monthlyAmount: 5000,
-                    cagr: estimatedCagr,
-                    risk: "中風險"
-                };
+            } catch (err) {
+                console.error("Fetch API Error:", err);
             }
 
             btn.innerHTML = `<i class="fa-solid fa-plus"></i> 分析並加入組合`;
             btn.disabled = false;
-
-            // Add to portfolio list
-            const existing = state.assets.find(a => a.ticker.toUpperCase() === finalData.ticker.toUpperCase());
-            if (!existing) {
-                state.assets.push(finalData);
-                saveState();
-                renderPortfolioList();
-                updateGrowthSimulation();
-            } else {
-                // Inline notice without alert
-                const inputEl = document.getElementById('ai-ticker-input');
-                inputEl.classList.add('border-amber-500');
-                setTimeout(() => inputEl.classList.remove('border-amber-500'), 1500);
-            }
         });
 
-        // Key Config Panel Handlers
-        document.getElementById('toggle-key-panel-btn').addEventListener('click', () => {
-            const panel = document.getElementById('key-config-panel');
-            panel.classList.toggle('hidden');
-        });
-
-        document.getElementById('save-api-key-btn').addEventListener('click', () => {
-            const keyVal = document.getElementById('user-api-key-input').value.trim();
-            if (keyVal) {
-                localStorage.setItem('yinna_gemini_api_key', keyVal);
-                document.getElementById('key-config-panel').classList.add('hidden');
-            } else {
-                localStorage.removeItem('yinna_gemini_api_key');
-            }
-        });
-
-        // Modals Setup
-        function setupModals() {
-            const openIncome = document.getElementById('open-income-modal');
-            const openExpense = document.getElementById('open-expense-modal');
-            const openReserve = document.getElementById('open-reserve-modal');
-            const openInvest = document.getElementById('open-invest-modal');
-
-            const incomeModal = document.getElementById('income-modal');
-            const expenseModal = document.getElementById('expense-modal');
-            const reserveModal = document.getElementById('reserve-modal');
-            const investModal = document.getElementById('invest-modal');
-
-            openIncome.addEventListener('click', () => { renderIncomeList(); incomeModal.classList.remove('hidden'); });
-            openExpense.addEventListener('click', () => { renderExpenseList(); expenseModal.classList.remove('hidden'); });
-            openReserve.addEventListener('click', () => { renderReserveList(); reserveModal.classList.remove('hidden'); });
-            openInvest.addEventListener('click', () => {
-                document.getElementById('modal-input-invest').value = state.investment;
-                investModal.classList.remove('hidden');
-            });
-
-            document.querySelectorAll('.close-modal-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    incomeModal.classList.add('hidden');
-                    expenseModal.classList.add('hidden');
-                    reserveModal.classList.add('hidden');
-                    investModal.classList.add('hidden');
-                });
-            });
-
-            [incomeModal, expenseModal, reserveModal, investModal].forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) modal.classList.add('hidden');
-                });
-            });
-        }
-
-        // Quick Split Buttons
-        document.getElementById('sync-invest-btn').addEventListener('click', () => {
-            const totalInv = Number(state.investment) || 0;
-            if (state.assets.length > 0) {
-                const splitAmount = Math.floor(totalInv / state.assets.length);
-                state.assets.forEach(a => a.monthlyAmount = splitAmount);
-                saveState();
-                renderPortfolioList();
-                updateGrowthSimulation();
-            }
-        });
-
-        document.getElementById('sync-disposable-btn').addEventListener('click', () => {
-            const totalInc = getTotalIncomes();
-            const totalExp = getTotalExpenses();
-            const totalRes = getTotalReserves();
-            const totalInv = Number(state.investment) || 0;
-            const disposable = Math.max(0, totalInc - totalExp - totalRes - totalInv);
-
-            if (state.assets.length > 0) {
-                const splitAmount = Math.floor(disposable / state.assets.length);
-                state.assets.forEach(a => a.monthlyAmount = splitAmount);
-                saveState();
-                renderPortfolioList();
-                updateGrowthSimulation();
-            }
-        });
-
-        simYearsSlider.addEventListener('input', updateGrowthSimulation);
-
-        // Reset Data Button
-        document.getElementById('reset-btn').addEventListener('click', () => {
-            const confirmOverlay = document.createElement('div');
-            confirmOverlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop';
-            confirmOverlay.innerHTML = `
-                <div class="glass-panel w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30 text-center">
-                    <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-xl">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">確定要重置所有資料嗎？</h3>
-                    <p class="text-xs text-slate-400">此動作將清除所有自訂數據與投資組合，恢復原始預設值。</p>
-                    <div class="flex gap-2 pt-2">
-                        <button id="cancel-reset" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl cursor-pointer">取消</button>
-                        <button id="confirm-reset" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl cursor-pointer">確認重置</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmOverlay);
-
-            document.getElementById('cancel-reset').addEventListener('click', () => confirmOverlay.remove());
-            document.getElementById('confirm-reset').addEventListener('click', () => {
-                localStorage.removeItem('yinna_budget_state_v6');
-                state = JSON.parse(JSON.stringify(defaultData));
-                simYearsSlider.value = state.simYears;
-                updateAllUI();
-                confirmOverlay.remove();
-            });
-        });
-
-        window.onload = function() {
-            simYearsSlider.value = state.simYears || 20;
-            if(!state.assets) state.assets = defaultData.assets;
-
-            // Load Saved API Key into input if exists
-            const existingKey = localStorage.getItem('yinna_gemini_api_key');
-            if (existingKey) {
-                document.getElementById('user-api-key-input').value = existingKey;
-                document.getElementById('key-config-panel').classList.add('hidden');
-            } else {
-                document.getElementById('key-config-panel').classList.add('hidden');
-            }
-
-            setupModals();
-            updateAllUI();
-        };
+        document.getElementById('sim-years-slider').addEventListener('input', updateGrowthSimulation);
+        window.onload = function() { updateAllUI(); };
     </script>
 </body>
 </html>
