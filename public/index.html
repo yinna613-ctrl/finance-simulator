@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yinna's -小工具 智慧財務規劃與股市模擬器</title>
+    <title>Yinna's 小工具-智慧財務規劃與股市模擬器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -13,6 +13,30 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            900: '#064e3b',
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         input[type=range] { accent-color: #10b981; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -59,12 +83,12 @@
         <!-- Stat Dashboard Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div id="open-income-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-emerald-500/50 transition-all group">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-400">每月稅後總收入</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-400 transition-colors">每月稅後總收入</span>
                 <div class="mt-2"><span id="dash-income" class="text-xl font-black text-white">NT$ 0</span></div>
             </div>
 
             <div id="open-expense-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-rose-500/50 transition-all group">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-400">固定必要支出</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-400 transition-colors">固定必要支出</span>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-expenses" class="text-xl font-black text-rose-400">NT$ 0</span>
                     <span id="ratio-expenses" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">0%</span>
@@ -72,7 +96,7 @@
             </div>
 
             <div id="open-reserve-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-amber-500/50 transition-all group">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-400">預備金撥入</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-400 transition-colors">預備金撥入</span>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-reserves" class="text-xl font-black text-amber-400">NT$ 0</span>
                     <span id="ratio-reserves" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">0%</span>
@@ -80,7 +104,7 @@
             </div>
 
             <div id="open-invest-modal" class="glass-panel rounded-2xl p-4 shadow-xl cursor-pointer hover:border-indigo-500/50 transition-all group">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-400">長期儲蓄/投資</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-400 transition-colors">長期儲蓄/投資</span>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="dash-invest" class="text-xl font-black text-indigo-400">NT$ 0</span>
                     <span id="ratio-invest" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">0%</span>
@@ -96,6 +120,7 @@
                     <span id="dash-disposable" class="text-xl font-black text-white">NT$ 0</span>
                     <span id="ratio-disposable" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white/20 text-white">0%</span>
                 </div>
+                <p class="text-[11px] text-emerald-100/80 mt-1">扣除所有項目後剩餘</p>
             </div>
         </div>
 
@@ -186,6 +211,67 @@
         </div>
     </main>
 
+    <!-- Modals -->
+    <div id="income-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-emerald-500/30">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sack-dollar text-emerald-400"></i> 每月稅後總收入管理
+                </h3>
+                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="income-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <button id="add-income-btn" class="px-3 py-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl transition-colors border border-emerald-500/20 flex items-center gap-1.5 cursor-pointer"><i class="fa-solid fa-plus"></i> 新增收入來源</button>
+                <div class="text-xs text-slate-400">總收入：<span id="modal-subtotal-incomes" class="font-extrabold text-emerald-400 text-sm">NT$ 0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="expense-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-receipt text-rose-400"></i> 固定必要支出管理</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="expense-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <button id="add-expense-btn" class="px-3 py-1.5 text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-colors border border-rose-500/20 flex items-center gap-1.5 cursor-pointer"><i class="fa-solid fa-plus"></i> 新增支出項目</button>
+                <div class="text-xs text-slate-400">固定支出小計：<span id="modal-subtotal-expenses" class="font-extrabold text-rose-400 text-sm">NT$ 0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="reserve-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-vault text-amber-400"></i> 預備金撥入管理</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="reserve-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <button id="add-reserve-btn" class="px-3 py-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors border border-amber-500/20 flex items-center gap-1.5 cursor-pointer"><i class="fa-solid fa-plus"></i> 新增預備金項目</button>
+                <div class="text-xs text-slate-400">預備金小計：<span id="modal-subtotal-reserves" class="font-extrabold text-amber-400 text-sm">NT$ 0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="invest-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 border border-indigo-500/30">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-line text-indigo-400"></i> 長期儲蓄 / 投資金額設定</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 py-2">
+                <label class="block text-xs font-bold text-slate-300">每月固定投入長期儲蓄與投資金額</label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">NT$</span>
+                    <input type="number" id="modal-input-invest" value="15000" min="0" step="1000" class="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-extrabold text-white focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Application Logic -->
     <script>
         const defaultData = {
@@ -200,16 +286,99 @@
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v8')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v9')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v8', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v9', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalPortfolioMonthly() { return state.assets.reduce((s, i) => s + (Number(i.monthlyAmount)||0), 0); }
         function formatMoney(amount) { return 'NT$ ' + Number(amount).toLocaleString('zh-TW'); }
+
+        function renderIncomeList() {
+            const container = document.getElementById('income-list');
+            container.innerHTML = '';
+            state.incomes.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800';
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="收入名稱" class="income-name flex-1 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-emerald-500" data-index="${index}">
+                    <div class="relative w-32">
+                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">NT$</span>
+                        <input type="number" value="${item.amount}" min="0" step="500" class="income-amount w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500" data-index="${index}">
+                    </div>
+                    <button class="delete-income-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                `;
+                container.appendChild(row);
+            });
+            document.getElementById('modal-subtotal-incomes').textContent = formatMoney(getTotalIncomes());
+            attachIncomeEvents();
+        }
+
+        function renderExpenseList() {
+            const container = document.getElementById('expense-list');
+            container.innerHTML = '';
+            state.expenses.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800';
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="支出名稱" class="expense-name flex-1 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-rose-500" data-index="${index}">
+                    <div class="relative w-32">
+                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">NT$</span>
+                        <input type="number" value="${item.amount}" min="0" step="500" class="expense-amount w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-rose-400 focus:outline-none focus:border-rose-500" data-index="${index}">
+                    </div>
+                    <button class="delete-expense-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                `;
+                container.appendChild(row);
+            });
+            document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses());
+            attachExpenseEvents();
+        }
+
+        function renderReserveList() {
+            const container = document.getElementById('reserve-list');
+            container.innerHTML = '';
+            state.reserves.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800';
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="預備金名稱" class="reserve-name flex-1 bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500" data-index="${index}">
+                    <div class="relative w-32">
+                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">NT$</span>
+                        <input type="number" value="${item.amount}" min="0" step="500" class="reserve-amount w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-amber-400 focus:outline-none focus:border-amber-500" data-index="${index}">
+                    </div>
+                    <button class="delete-reserve-btn text-slate-500 hover:text-rose-400 p-1.5 transition-colors cursor-pointer" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                `;
+                container.appendChild(row);
+            });
+            document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves());
+            attachReserveEvents();
+        }
+
+        function attachIncomeEvents() {
+            document.querySelectorAll('.income-name').forEach(el => { el.addEventListener('input', (e) => { state.incomes[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
+            document.querySelectorAll('.income-amount').forEach(el => { el.addEventListener('input', (e) => { state.incomes[e.target.dataset.index].amount = Number(e.target.value) || 0; saveState(); document.getElementById('modal-subtotal-incomes').textContent = formatMoney(getTotalIncomes()); updateAllUI(); }); });
+            document.querySelectorAll('.delete-income-btn').forEach(el => { el.addEventListener('click', (e) => { if(state.incomes.length <= 1) return; state.incomes.splice(e.currentTarget.dataset.index, 1); saveState(); renderIncomeList(); updateAllUI(); }); });
+        }
+
+        function attachExpenseEvents() {
+            document.querySelectorAll('.expense-name').forEach(el => { el.addEventListener('input', (e) => { state.expenses[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
+            document.querySelectorAll('.expense-amount').forEach(el => { el.addEventListener('input', (e) => { state.expenses[e.target.dataset.index].amount = Number(e.target.value) || 0; saveState(); document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses()); updateAllUI(); }); });
+            document.querySelectorAll('.delete-expense-btn').forEach(el => { el.addEventListener('click', (e) => { state.expenses.splice(e.currentTarget.dataset.index, 1); saveState(); renderExpenseList(); updateAllUI(); }); });
+        }
+
+        function attachReserveEvents() {
+            document.querySelectorAll('.reserve-name').forEach(el => { el.addEventListener('input', (e) => { state.reserves[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
+            document.querySelectorAll('.reserve-amount').forEach(el => { el.addEventListener('input', (e) => { state.reserves[e.target.dataset.index].amount = Number(e.target.value) || 0; saveState(); document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves()); updateAllUI(); }); });
+            document.querySelectorAll('.delete-reserve-btn').forEach(el => { el.addEventListener('click', (e) => { state.reserves.splice(e.currentTarget.dataset.index, 1); saveState(); renderReserveList(); updateAllUI(); }); });
+        }
+
+        document.getElementById('add-income-btn').addEventListener('click', () => { state.incomes.push({ id: Date.now(), name: "新收入來源", amount: 5000 }); saveState(); renderIncomeList(); updateAllUI(); });
+        document.getElementById('add-expense-btn').addEventListener('click', () => { state.expenses.push({ id: Date.now(), name: "新支出項目", amount: 2000 }); saveState(); renderExpenseList(); updateAllUI(); });
+        document.getElementById('add-reserve-btn').addEventListener('click', () => { state.reserves.push({ id: Date.now(), name: "新預備金項目", amount: 2000 }); saveState(); renderReserveList(); updateAllUI(); });
+        document.getElementById('modal-input-invest').addEventListener('input', (e) => { state.investment = Number(e.target.value) || 0; saveState(); updateAllUI(); });
 
         function updateAllUI() {
             const inc = getTotalIncomes(), exp = getTotalExpenses(), res = getTotalReserves(), inv = Number(state.investment) || 0;
@@ -220,6 +389,31 @@
             document.getElementById('dash-reserves').textContent = formatMoney(res);
             document.getElementById('dash-invest').textContent = formatMoney(inv);
             document.getElementById('dash-disposable').textContent = formatMoney(disp);
+
+            const pctExp = inc > 0 ? ((exp / inc) * 100).toFixed(1) : 0;
+            const pctRes = inc > 0 ? ((res / inc) * 100).toFixed(1) : 0;
+            const pctInv = inc > 0 ? ((inv / inc) * 100).toFixed(1) : 0;
+            const pctDisp = inc > 0 ? ((disp / inc) * 100).toFixed(1) : 0;
+
+            document.getElementById('ratio-expenses').textContent = pctExp + '%';
+            document.getElementById('ratio-reserves').textContent = pctRes + '%';
+            document.getElementById('ratio-invest').textContent = pctInv + '%';
+            document.getElementById('ratio-disposable').textContent = pctDisp + '%';
+
+            document.getElementById('chart-pct-expenses').textContent = pctExp + '%';
+            document.getElementById('chart-pct-reserves').textContent = pctRes + '%';
+            document.getElementById('chart-pct-invest').textContent = pctInv + '%';
+            document.getElementById('chart-pct-disposable').textContent = pctDisp + '%';
+
+            let healthHTML = '';
+            if (inc <= 0) {
+                healthHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方收入卡片設定。</p>`;
+            } else if (disp < 0) {
+                healthHTML = `<p class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> 警告：總支出與儲蓄配置已超過總收入！</p>`;
+            } else {
+                healthHTML = `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> 財務收支健康，每月享有 ${formatMoney(disp)} 自由支配金。</p>`;
+            }
+            document.getElementById('health-check-content').innerHTML = healthHTML;
 
             updateDoughnutChart(exp, res, inv, Math.max(0, disp));
             renderPortfolioList();
@@ -351,7 +545,7 @@
             });
         }
 
-        // Call Backend API Endpoint
+        // Call Express Backend API
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const ticker = document.getElementById('ai-ticker-input').value.trim();
             const btn = document.getElementById('ai-analyze-btn');
@@ -384,15 +578,65 @@
                     }
                 }
             } catch (err) {
-                console.error("Fetch API Error:", err);
+                console.error("API Error:", err);
             }
 
             btn.innerHTML = `<i class="fa-solid fa-plus"></i> 分析並加入組合`;
             btn.disabled = false;
         });
 
+        // Quick Split Buttons
+        document.getElementById('sync-invest-btn').addEventListener('click', () => {
+            const totalInv = Number(state.investment) || 0;
+            if (state.assets.length > 0) {
+                const splitAmount = Math.floor(totalInv / state.assets.length);
+                state.assets.forEach(a => a.monthlyAmount = splitAmount);
+                saveState(); renderPortfolioList(); updateGrowthSimulation();
+            }
+        });
+
+        document.getElementById('sync-disposable-btn').addEventListener('click', () => {
+            const inc = getTotalIncomes(), exp = getTotalExpenses(), res = getTotalReserves(), inv = Number(state.investment) || 0;
+            const disp = Math.max(0, inc - exp - res - inv);
+            if (state.assets.length > 0) {
+                const splitAmount = Math.floor(disp / state.assets.length);
+                state.assets.forEach(a => a.monthlyAmount = splitAmount);
+                saveState(); renderPortfolioList(); updateGrowthSimulation();
+            }
+        });
+
+        function setupModals() {
+            const modals = {
+                'open-income-modal': { modal: 'income-modal', render: renderIncomeList },
+                'open-expense-modal': { modal: 'expense-modal', render: renderExpenseList },
+                'open-reserve-modal': { modal: 'reserve-modal', render: renderReserveList },
+                'open-invest-modal': { modal: 'invest-modal', render: () => { document.getElementById('modal-input-invest').value = state.investment; } }
+            };
+
+            Object.keys(modals).forEach(btnId => {
+                document.getElementById(btnId).addEventListener('click', () => {
+                    modals[btnId].render();
+                    document.getElementById(modals[btnId].modal).classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.close-modal-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    ['income-modal', 'expense-modal', 'reserve-modal', 'invest-modal'].forEach(id => {
+                        document.getElementById(id).classList.add('hidden');
+                    });
+                });
+            });
+        }
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            localStorage.removeItem('yinna_budget_state_v9');
+            state = JSON.parse(JSON.stringify(defaultData));
+            updateAllUI();
+        });
+
         document.getElementById('sim-years-slider').addEventListener('input', updateGrowthSimulation);
-        window.onload = function() { updateAllUI(); };
+        window.onload = function() { setupModals(); updateAllUI(); };
     </script>
 </body>
 </html>
