@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yinna 小工具 - 智慧財務規劃與股市模擬器</title>
+    <title>Yinna's 智慧財務規劃與股市模擬器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -74,12 +74,15 @@
                 </div>
                 <div>
                     <h1 class="text-base sm:text-lg font-bold text-white leading-tight flex items-center gap-2">
-                        Yinna's 智慧財務與投資模擬器
+                        Yinna's 智慧財務規劃與股市模擬器
                     </h1>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2">
+                <button id="toggle-key-panel-btn" class="px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-colors flex items-center gap-1.5 border border-amber-500/30 cursor-pointer">
+                    <i class="fa-solid fa-key"></i> <span class="hidden sm:inline">設定 API Key</span>
+                </button>
                 <button id="reset-btn" class="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-700 cursor-pointer">
                     <i class="fa-solid fa-rotate-left"></i> <span class="hidden sm:inline">重置資料</span>
                 </button>
@@ -87,10 +90,26 @@
         </div>
     </header>
 
+    <!-- API Key Config Bar (Collapsible) -->
+    <div id="key-config-panel" class="bg-slate-900 border-b border-slate-800 p-4 transition-all">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 text-slate-300">
+                <i class="fa-solid fa-shield-halved text-amber-400 text-base"></i>
+                <span>請輸入您的 <strong>Google Gemini API Key</strong>（金鑰僅會加密存於本機瀏覽器，不會傳送至伺服器）：</span>
+            </div>
+            <div class="flex items-center gap-2 flex-1 max-w-md">
+                <input type="password" id="user-api-key-input" placeholder="貼上您的 Gemini API Key (例：AQ... 或 AIzaSy...)" class="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+                <button id="save-api-key-btn" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer shrink-0">
+                    儲存 Key
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- Stat Dashboard Cards (Clickable to open Modals) -->
+        <!-- Stat Dashboard Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             
             <!-- Income Card -->
@@ -199,7 +218,7 @@
                 </div>
 
                 <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
-                    <span>💡 小提示：點擊上方任一統計卡片（收入、支出、預備金、投資），即可隨時開啟彈窗進行細項增減。</span>
+                    <span>💡 小提示：點擊上方任一統計卡片，即可開啟彈窗進行細項增減。</span>
                 </div>
             </div>
 
@@ -269,7 +288,7 @@
                 </div>
             </div>
 
-            <!-- Simulation Multi-Asset Comparison Chart -->
+            <!-- Simulation Multi-Asset Comparison Chart (Stacked Bar) -->
             <div class="relative h-96 w-full pt-2">
                 <canvas id="growth-chart"></canvas>
             </div>
@@ -280,7 +299,7 @@
 
     <!-- ================= MODALS ================= -->
 
-    <!-- 1. Income Modal -->
+    <!-- Income Modal -->
     <div id="income-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-emerald-500/30">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -291,23 +310,17 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
-            <div id="income-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                <!-- Dynamic rows -->
-            </div>
-
+            <div id="income-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
             <div class="flex items-center justify-between pt-2 border-t border-slate-800">
                 <button id="add-income-btn" class="px-3 py-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl transition-colors border border-emerald-500/20 flex items-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-plus"></i> 新增收入來源
                 </button>
-                <div class="text-xs text-slate-400">
-                    總收入：<span id="modal-subtotal-incomes" class="font-extrabold text-emerald-400 text-sm">NT$ 0</span>
-                </div>
+                <div class="text-xs text-slate-400">總收入：<span id="modal-subtotal-incomes" class="font-extrabold text-emerald-400 text-sm">NT$ 0</span></div>
             </div>
         </div>
     </div>
 
-    <!-- 2. Expense Modal -->
+    <!-- Expense Modal -->
     <div id="expense-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -318,23 +331,17 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
-            <div id="expense-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                <!-- Dynamic rows -->
-            </div>
-
+            <div id="expense-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
             <div class="flex items-center justify-between pt-2 border-t border-slate-800">
                 <button id="add-expense-btn" class="px-3 py-1.5 text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-colors border border-rose-500/20 flex items-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-plus"></i> 新增支出項目
                 </button>
-                <div class="text-xs text-slate-400">
-                    固定支出小計：<span id="modal-subtotal-expenses" class="font-extrabold text-rose-400 text-sm">NT$ 0</span>
-                </div>
+                <div class="text-xs text-slate-400">固定支出小計：<span id="modal-subtotal-expenses" class="font-extrabold text-rose-400 text-sm">NT$ 0</span></div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Reserve Modal -->
+    <!-- Reserve Modal -->
     <div id="reserve-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -345,23 +352,17 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
-            <div id="reserve-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                <!-- Dynamic rows -->
-            </div>
-
+            <div id="reserve-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
             <div class="flex items-center justify-between pt-2 border-t border-slate-800">
                 <button id="add-reserve-btn" class="px-3 py-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors border border-amber-500/20 flex items-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-plus"></i> 新增預備金項目
                 </button>
-                <div class="text-xs text-slate-400">
-                    預備金小計：<span id="modal-subtotal-reserves" class="font-extrabold text-amber-400 text-sm">NT$ 0</span>
-                </div>
+                <div class="text-xs text-slate-400">預備金小計：<span id="modal-subtotal-reserves" class="font-extrabold text-amber-400 text-sm">NT$ 0</span></div>
             </div>
         </div>
     </div>
 
-    <!-- 4. Investment Modal -->
+    <!-- Investment Modal -->
     <div id="invest-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 border border-indigo-500/30">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -372,21 +373,20 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
             <div class="space-y-3 py-2">
                 <label class="block text-xs font-bold text-slate-300">每月固定投入長期儲蓄與投資金額</label>
                 <div class="relative">
                     <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">NT$</span>
                     <input type="number" id="modal-input-invest" value="15000" min="0" step="1000" class="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-extrabold text-white focus:outline-none focus:border-indigo-500">
                 </div>
-                <p class="text-[11px] text-slate-400">此金額會同步連動至下方的「AI 股市預測與複利投資模擬器」中，隨改隨存。</p>
+                <p class="text-[11px] text-slate-400">此金額可同步連動下方模擬器進行設定。</p>
             </div>
         </div>
     </div>
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Default Data Structure with Multiple Assets
+        // Default State Data Structure
         const defaultData = {
             incomes: [
                 { id: 1, name: "主業薪資", amount: 50000 },
@@ -410,7 +410,7 @@
             ]
         };
 
-        // Load or Initialize State
+        // Load State
         let state = JSON.parse(localStorage.getItem('yinna_budget_state_v6')) || JSON.parse(JSON.stringify(defaultData));
 
         // Chart instances
@@ -437,7 +437,6 @@
         const simYearsSlider = document.getElementById('sim-years-slider');
         const yearsDisplay = document.getElementById('years-display');
 
-        // Save state to LocalStorage
         function saveState() {
             localStorage.setItem('yinna_budget_state_v6', JSON.stringify(state));
         }
@@ -462,7 +461,7 @@
             return 'NT$ ' + Number(amount).toLocaleString('zh-TW');
         }
 
-        // Render Dynamic Lists inside Modals
+        // Modals Dynamic Lists
         function renderIncomeList() {
             const container = document.getElementById('income-list');
             container.innerHTML = '';
@@ -682,14 +681,14 @@
             }
             healthCheckContent.innerHTML = healthHTML;
 
-            // Update Doughnut Chart sorted largest to smallest clockwise from 0 deg
+            // Doughnut Chart starting from 0 deg (12 o'clock), sorted descending clockwise
             updateDoughnutChart(totalExp, totalRes, totalInv, Math.max(0, disposable));
 
             renderPortfolioList();
             updateGrowthSimulation();
         }
 
-        // Doughnut Chart (Sorted Largest to Smallest Clockwise from Top)
+        // Doughnut Chart (0 Degree Start / Clockwise Descending)
         function updateDoughnutChart(exp, res, inv, disp) {
             const ctx = document.getElementById('allocation-chart').getContext('2d');
             
@@ -700,7 +699,6 @@
                 { label: '自由零用', value: disp, color: '#34d399' }
             ];
 
-            // Sort descending so largest is first (0 degrees top)
             items.sort((a, b) => b.value - a.value);
 
             const sortedLabels = items.map(i => i.label);
@@ -744,7 +742,7 @@
             });
         }
 
-        // Render Multi-Asset Investment Allocation Rows
+        // Render Multi-Asset Rows with Hover Tooltip for CAGR
         function renderPortfolioList() {
             const container = document.getElementById('portfolio-list-container');
             container.innerHTML = '';
@@ -753,7 +751,7 @@
                 container.innerHTML = `
                     <div class="text-center py-6 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl bg-slate-950/40">
                         <i class="fa-solid fa-folder-open text-base mb-1 block"></i>
-                        目前投資組合中無任何標的，請在上方輸入股票代號並點擊新增。
+                        目前投資組合中無任何標的，請在上方輸入股票代號新增。
                     </div>
                 `;
                 document.getElementById('total-portfolio-monthly').textContent = formatMoney(0);
@@ -767,7 +765,18 @@
                     <div class="flex items-center gap-2">
                         <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
                         <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
-                        <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">CAGR: ${asset.cagr}%</span>
+                        
+                        <!-- CAGR hover tooltip tag -->
+                        <div class="relative group/cagr inline-block cursor-help">
+                            <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20 flex items-center gap-1">
+                                CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i>
+                            </span>
+                            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-64 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20 leading-relaxed backdrop-blur-md">
+                                <div class="font-bold text-teal-400 mb-0.5">📊 什麼是 CAGR？</div>
+                                <strong>CAGR（複合年均成長率）</strong> 代表此標的預期平均每年的年化報酬率，已計算資產複利累積效果。
+                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-r border-b border-teal-500/40 rotate-45"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-3">
@@ -785,7 +794,6 @@
 
             document.getElementById('total-portfolio-monthly').textContent = formatMoney(getTotalPortfolioMonthly());
 
-            // Attach input change & delete events
             document.querySelectorAll('.asset-amount-input').forEach(el => {
                 el.addEventListener('input', (e) => {
                     const idx = e.target.dataset.index;
@@ -807,7 +815,7 @@
             });
         }
 
-        // Multi-Asset Growth Simulation
+        // Multi-Asset Growth Simulation Chart (Stacked Bar Chart / 直筒圖)
         function updateGrowthSimulation() {
             const years = Number(simYearsSlider.value);
             yearsDisplay.textContent = years + ' 年';
@@ -900,45 +908,50 @@
             });
         }
 
+        // Show Custom Dialog
+        function showErrorNotice(title, text) {
+            const noticeOverlay = document.createElement('div');
+            noticeOverlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop';
+            noticeOverlay.innerHTML = `
+                <div class="glass-panel w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 text-center">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">${title}</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">${text}</p>
+                    <button id="close-error-notice" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl cursor-pointer">確定</button>
+                </div>
+            `;
+            document.body.appendChild(noticeOverlay);
+            document.getElementById('close-error-notice').addEventListener('click', () => noticeOverlay.remove());
+        }
+
         // AI Asset Analysis
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const ticker = document.getElementById('ai-ticker-input').value.trim().toUpperCase() || "0050";
             const btn = document.getElementById('ai-analyze-btn');
+
+            // 1. 離線檢查
+            if (!navigator.onLine) {
+                showErrorNotice("連線失敗 / 處於離線狀態", `無法檢索標的 <span class="font-bold text-amber-400">${ticker}</span>。<br>請檢查您的裝置網路連線狀態後再試一次。`);
+                return;
+            }
+
+            // 2. 金鑰檢查
+            const savedKey = localStorage.getItem('yinna_gemini_api_key');
+            if (!savedKey) {
+                showErrorNotice("請先設定 API Key", `點擊右上角的 <strong>「設定 API Key」</strong> 貼上您的 Gemini API Key 後即可使用 AI 自動分析！`);
+                document.getElementById('key-config-panel').classList.remove('hidden');
+                return;
+            }
+
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 分析中...`;
             btn.disabled = true;
 
-            // Offline Knowledge Base for popular ETFs/Stocks as instant fallback
-            const popularPresets = {
-                "00878": { ticker: "00878", name: "國泰永續高股息", cagr: 8.5, risk: "中低風險" },
-                "0050": { ticker: "0050", name: "元大台灣50", cagr: 10.0, risk: "中風險" },
-                "0056": { ticker: "0056", name: "元大高股息", cagr: 7.5, risk: "中低風險" },
-                "00919": { ticker: "00919", name: "群益台灣精選高息", cagr: 9.0, risk: "中低風險" },
-                "00929": { ticker: "00929", name: "復華台灣科技優息", cagr: 9.5, risk: "中風險" },
-                "006208": { ticker: "006208", name: "富邦台50", cagr: 10.2, risk: "中風險" },
-                "NVDA": { ticker: "NVDA", name: "NVIDIA 輝達", cagr: 25.0, risk: "高風險" },
-                "TSLA": { ticker: "TSLA", name: "特斯拉", cagr: 20.0, risk: "高風險" },
-                "AAPL": { ticker: "AAPL", name: "蘋果電腦", cagr: 15.0, risk: "中風險" },
-                "QQQ": { ticker: "QQQ", name: "Invesco 納斯達克100", cagr: 13.5, risk: "中高風險" },
-                "VOO": { ticker: "VOO", name: "Vanguard 標普500", cagr: 10.5, risk: "中風險" },
-                "VT": { ticker: "VT", name: "Vanguard 全球股票", cagr: 8.0, risk: "中風險" },
-                "BTC": { ticker: "BTC", name: "比特幣", cagr: 30.0, risk: "極高風險" }
-            };
-
-            // Base64 obfuscated API Key
-            const encodedDefaultKey = "QVEuQWI4Uk42SnlfbEFpVE1LWHpPczZvSFVVb2U1NVZVUDEta3Z6a1N6X05ldk4wWURlUTJ3"; 
-            let apiKey = "";
-            try {
-                if (encodedDefaultKey) {
-                    apiKey = decodeURIComponent(escape(atob(encodedDefaultKey)));
-                }
-            } catch(e) {
-                apiKey = "";
-            }
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`;
 
             const systemPrompt = "你是一位華爾街資深計量分析師。請針對用戶提供的股票代號或資產進行分析，並回傳純 JSON 格式，包含欄位：{\"ticker\": \"代號大寫\", \"assetName\": \"中文名稱\", \"cagr\": 10.5, \"riskLevel\": \"風險等級\"}";
-            const userQuery = `請分析標的：${ticker}，估算其合理的長期歷史年化報酬率 CAGR (%) 與繁體中文股票或ETF名稱。`;
+            const userQuery = `請分析標的：${ticker}，估算其合理的長期歷史年化報酬率 CAGR (%) 與繁體中文名稱。`;
 
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
@@ -960,84 +973,82 @@
 
             let success = false;
             let parsed = null;
+            let errorStatus = 0;
 
-            if (apiKey) {
-                for (let attempt = 0; attempt < 3; attempt++) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        if (response.ok) {
-                            const result = await response.json();
-                            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (jsonText) {
-                                parsed = JSON.parse(jsonText);
-                                success = true;
-                                break;
-                            }
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (jsonText) {
+                            parsed = JSON.parse(jsonText);
+                            success = true;
+                            break;
                         }
-                    } catch (e) {
-                        if (attempt === 2) console.error(e);
+                    } else {
+                        errorStatus = response.status;
                     }
-                    await new Promise(r => setTimeout(r, 800 * Math.pow(2, attempt)));
+                } catch (e) {
+                    if (attempt === 2) console.error(e);
                 }
+                await new Promise(r => setTimeout(r, 800 * Math.pow(2, attempt)));
             }
 
             btn.innerHTML = `<i class="fa-solid fa-robot"></i> 🤖 AI 分析並加入組合`;
             btn.disabled = false;
 
-            let finalData = null;
-
             if (success && parsed) {
-                finalData = {
+                const finalData = {
                     ticker: parsed.ticker.toUpperCase(),
                     name: parsed.assetName,
                     monthlyAmount: 5000,
                     cagr: Number(parsed.cagr) || 8.0,
                     risk: parsed.riskLevel || "中風險"
                 };
-            } else if (popularPresets[ticker]) {
-                // Instant Local Preset Fallback
-                finalData = { ...popularPresets[ticker], monthlyAmount: 5000 };
-            } else {
-                // Default generic fallback
-                finalData = {
-                    ticker: ticker,
-                    name: `${ticker} 自訂標的`,
-                    monthlyAmount: 5000,
-                    cagr: 8.0,
-                    risk: "中風險"
-                };
-            }
 
-            const existing = state.assets.find(a => a.ticker.toUpperCase() === finalData.ticker.toUpperCase());
-            if (!existing) {
-                state.assets.push(finalData);
-                saveState();
-                renderPortfolioList();
-                updateGrowthSimulation();
+                const existing = state.assets.find(a => a.ticker.toUpperCase() === finalData.ticker.toUpperCase());
+                if (!existing) {
+                    state.assets.push(finalData);
+                    saveState();
+                    renderPortfolioList();
+                    updateGrowthSimulation();
+                } else {
+                    showErrorNotice("標的已存在", `<span class="font-bold text-amber-400">${finalData.ticker} (${finalData.name})</span> 已經在您的投資組合列表中囉！`);
+                }
             } else {
-                // Show modal overlay notice instead of native alert
-                const noticeOverlay = document.createElement('div');
-                noticeOverlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop';
-                noticeOverlay.innerHTML = `
-                    <div class="glass-panel w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 text-center">
-                        <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl">
-                            <i class="fa-solid fa-circle-info"></i>
-                        </div>
-                        <h3 class="text-base font-bold text-white">${finalData.ticker} 已存在</h3>
-                        <p class="text-xs text-slate-400">${finalData.name} 已經在您的投資組合列表中囉！</p>
-                        <button id="close-notice" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl cursor-pointer">確定</button>
-                    </div>
-                `;
-                document.body.appendChild(noticeOverlay);
-                document.getElementById('close-notice').addEventListener('click', () => noticeOverlay.remove());
+                if (errorStatus === 400 || errorStatus === 403) {
+                    showErrorNotice("API Key 無效或未授權", `Google AI 服務存取拒絕 (Error ${errorStatus})。<br>請點擊右上角「設定 API Key」重新填入正確的金鑰。`);
+                } else {
+                    showErrorNotice("伺服器連線失敗", `無法檢索標的 <span class="font-bold text-amber-400">${ticker}</span>。<br>請確認網路狀態或 API Key 後再試。`);
+                }
             }
         });
 
-        // Modals setup
+        // Key Config Panel Handlers
+        document.getElementById('toggle-key-panel-btn').addEventListener('click', () => {
+            const panel = document.getElementById('key-config-panel');
+            panel.classList.toggle('hidden');
+        });
+
+        document.getElementById('save-api-key-btn').addEventListener('click', () => {
+            const keyVal = document.getElementById('user-api-key-input').value.trim();
+            if (keyVal) {
+                localStorage.setItem('yinna_gemini_api_key', keyVal);
+                showErrorNotice("Key 已儲存", "您的 API Key 已成功儲存於瀏覽器中！現在您可以安心開始使用 AI 分析功能了。");
+                document.getElementById('key-config-panel').classList.add('hidden');
+            } else {
+                localStorage.removeItem('yinna_gemini_api_key');
+                showErrorNotice("Key 已清除", "已清除儲存的 API Key。");
+            }
+        });
+
+        // Modals Setup
         function setupModals() {
             const openIncome = document.getElementById('open-income-modal');
             const openExpense = document.getElementById('open-expense-modal');
@@ -1103,7 +1114,7 @@
 
         simYearsSlider.addEventListener('input', updateGrowthSimulation);
 
-        // Reset Button
+        // Reset Data Button
         document.getElementById('reset-btn').addEventListener('click', () => {
             const confirmOverlay = document.createElement('div');
             confirmOverlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop';
@@ -1113,7 +1124,7 @@
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <h3 class="text-base font-bold text-white">確定要重置所有資料嗎？</h3>
-                    <p class="text-xs text-slate-400">此動作將清除所有自訂收入、支出與標的，恢復原始預設值。</p>
+                    <p class="text-xs text-slate-400">此動作將清除所有自訂數據與投資組合，恢復原始預設值。</p>
                     <div class="flex gap-2 pt-2">
                         <button id="cancel-reset" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl cursor-pointer">取消</button>
                         <button id="confirm-reset" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl cursor-pointer">確認重置</button>
@@ -1135,6 +1146,14 @@
         window.onload = function() {
             simYearsSlider.value = state.simYears || 20;
             if(!state.assets) state.assets = defaultData.assets;
+
+            // Load Saved API Key into input
+            const existingKey = localStorage.getItem('yinna_gemini_api_key');
+            if (existingKey) {
+                document.getElementById('user-api-key-input').value = existingKey;
+                document.getElementById('key-config-panel').classList.add('hidden');
+            }
+
             setupModals();
             updateAllUI();
         };
