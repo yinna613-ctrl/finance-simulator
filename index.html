@@ -895,7 +895,7 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 分析中...`;
             btn.disabled = true;
 
-            const apiKey = "AQ.Ab8RN6Jy_lAiTMKXzOs6oHUUoe55VUP1kvzkSz_NevN0YDeQ2w";
+            const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
             const systemPrompt = "你是一位華爾街資深計量分析師。請針對用戶提供的股票代號或資產進行分析，並回傳純 JSON 格式，包含欄位：{\"ticker\": \"代號大寫\", \"assetName\": \"中文名稱\", \"cagr\": 10.5, \"riskLevel\": \"風險等級\"}";
