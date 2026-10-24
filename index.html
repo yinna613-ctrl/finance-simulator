@@ -166,7 +166,7 @@
                     <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> 多標的投資組合與複利模擬器
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, NVDA）自動連線 Yahoo Finance 取得真實 CAGR 與模擬資產成長</p>
+                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, NVDA）自動連線 API 計算真實歷史年化報酬率 (CAGR)</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <button id="sync-invest-btn" class="px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg border border-indigo-500/30 cursor-pointer">平均平分長期儲蓄</button>
@@ -279,7 +279,10 @@
             "2603.TW": { name: "長榮海運", cagr: 12.0, risk: "高風險" },
             "2618.TW": { name: "長榮航", cagr: 11.5, risk: "中高風險" },
             "2330.TW": { name: "台積電", cagr: 16.5, risk: "中高風險" },
-            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" }
+            "2353.TW": { name: "宏碁", cagr: 10.5, risk: "中風險" },
+            "2371.TW": { name: "大同", cagr: 11.2, risk: "中風險" },
+            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" },
+            "QQQ": { name: "納斯達克100 ETF", cagr: 13.5, risk: "中高風險" }
         };
 
         const defaultData = {
@@ -294,11 +297,11 @@
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v16')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v17')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v16', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v17', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -559,7 +562,7 @@
             });
         }
 
-        // Yahoo Finance API 查詢邏輯
+        // Yahoo / AllOrigins API 連線查詢邏輯
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
@@ -570,52 +573,56 @@
 
             btnText.innerText = "查詢中...";
             statusMsg.classList.remove('hidden');
-            statusMsg.innerText = `連線 Yahoo Finance 查詢 ${formattedTicker} 過去 5 年數據...`;
+            statusMsg.innerText = `連線網路 API 查詢 ${formattedTicker} 過去 5 年數據...`;
 
             let stockData = null;
 
             try {
-                const proxyUrl = 'https://corsproxy.io/?';
+                // 使用 AllOrigins API 作為高穩定代理連線
                 const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
-                
-                const response = await fetch(proxyUrl + encodeURIComponent(yahooUrl));
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
+
+                const response = await fetch(proxyUrl);
                 if (response.ok) {
-                    const data = await response.json();
-                    const result = data.chart?.result?.[0];
+                    const outerData = await response.json();
+                    if (outerData.contents) {
+                        const data = JSON.parse(outerData.contents);
+                        const result = data.chart?.result?.[0];
 
-                    if (result) {
-                        const meta = result.meta;
-                        const quotes = result.indicators?.quote?.[0]?.close || [];
-                        const validPrices = quotes.filter(p => p !== null && p > 0);
+                        if (result) {
+                            const meta = result.meta;
+                            const quotes = result.indicators?.quote?.[0]?.close || [];
+                            const validPrices = quotes.filter(p => p !== null && p > 0);
 
-                        if (validPrices.length >= 2) {
-                            const startPrice = validPrices[0];
-                            const endPrice = meta.regularMarketPrice || validPrices[validPrices.length - 1];
-                            let calculatedCagr = (Math.pow(endPrice / startPrice, 1 / 5) - 1) * 100;
-                            
-                            if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
-                                stockData = {
-                                    ticker: formattedTicker,
-                                    name: meta.shortName || meta.symbol || formattedTicker,
-                                    cagr: Number(calculatedCagr.toFixed(1))
-                                };
+                            if (validPrices.length >= 2) {
+                                const startPrice = validPrices[0];
+                                const endPrice = meta.regularMarketPrice || validPrices[validPrices.length - 1];
+                                let calculatedCagr = (Math.pow(endPrice / startPrice, 1 / 5) - 1) * 100;
+                                
+                                if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
+                                    stockData = {
+                                        ticker: formattedTicker,
+                                        name: stockDatabase[formattedTicker]?.name || meta.shortName || meta.symbol || formattedTicker,
+                                        cagr: Number(calculatedCagr.toFixed(1))
+                                    };
+                                }
                             }
                         }
                     }
                 }
             } catch (err) {
-                console.warn("API 請求限制，切換為備援庫", err);
+                console.warn("API 請求受限，切換為備援庫", err);
             }
 
             if (!stockData) {
                 if (stockDatabase[formattedTicker]) {
                     stockData = { ticker: formattedTicker, name: stockDatabase[formattedTicker].name, cagr: stockDatabase[formattedTicker].cagr };
                 } else {
-                    stockData = { ticker: formattedTicker, name: formattedTicker.includes('.TW') ? '台股標的' : '美股資產', cagr: 9.0 };
+                    stockData = { ticker: formattedTicker, name: formattedTicker.includes('.TW') ? '台股個股' : '美股資產', cagr: 9.5 };
                 }
-                statusMsg.innerText = `⚠️ 已載入 ${formattedTicker} 預設數據。`;
+                statusMsg.innerText = `⚠️ 載入 ${formattedTicker} 資料庫備援試算數據。`;
             } else {
-                statusMsg.innerText = `✅ Yahoo Finance 成功取得 ${stockData.name}，5年 CAGR 為 ${stockData.cagr}%`;
+                statusMsg.innerText = `✅ API 成功取得 ${stockData.name}，計算 5 年真實 CAGR 為 ${stockData.cagr}%`;
             }
 
             const existing = state.assets.find(a => a.ticker.toUpperCase() === stockData.ticker);
@@ -679,7 +686,7 @@
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v16');
+            localStorage.removeItem('yinna_budget_state_v17');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
