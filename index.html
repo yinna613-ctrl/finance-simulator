@@ -122,7 +122,7 @@
             </div>
         </div>
 
-        <!-- Allocation Chart Section -->
+        <!-- Allocation Chart & 361 Card Section -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -147,12 +147,14 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+            <!-- 獨立 361 理財黃金比例 Card (修復連動邏輯) -->
+            <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between border border-teal-500/20">
                 <div>
-                    <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
-                        <i class="fa-solid fa-shield-halved text-teal-400"></i> 財務健康診斷報告
+                    <h3 class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-chart-line text-teal-400"></i> 361 理財黃金比例與備用金診斷</span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20">理財法則</span>
                     </h3>
-                    <div id="health-check-content" class="text-xs leading-relaxed text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <div id="rule-361-content" class="text-xs leading-relaxed text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3">
                         計算中...
                     </div>
                 </div>
@@ -271,20 +273,7 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        const stockDatabase = {
-            "0050.TW": { name: "元大台灣50", cagr: 10.2, risk: "中風險" },
-            "0056.TW": { name: "元大高股息", cagr: 7.8, risk: "中低風險" },
-            "00878.TW": { name: "國泰永續高股息", cagr: 8.5, risk: "中低風險" },
-            "00919.TW": { name: "群益台灣精選高息", cagr: 9.0, risk: "中低風險" },
-            "2603.TW": { name: "長榮海運", cagr: 12.0, risk: "高風險" },
-            "2618.TW": { name: "長榮航", cagr: 11.5, risk: "中高風險" },
-            "2330.TW": { name: "台積電", cagr: 16.5, risk: "中高風險" },
-            "2353.TW": { name: "宏碁", cagr: 10.5, risk: "中風險" },
-            "2371.TW": { name: "大同", cagr: 11.2, risk: "中風險" },
-            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" },
-            "QQQ": { name: "納斯達克100 ETF", cagr: 13.5, risk: "中高風險" }
-        };
-
+        // ✅ 徹底刪除靜態字典 stockDatabase
         const defaultData = {
             incomes: [{ id: 1, name: "主業薪資", amount: 50000 }],
             expenses: [{ id: 1, name: "固定支出", amount: 25000 }],
@@ -292,16 +281,16 @@
             investment: 15000,
             simYears: 20,
             assets: [
-                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 10000, cagr: 11.5, risk: "中高風險" },
-                { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
+                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 10000, cagr: 11.5 },
+                { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5 }
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v17')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v27')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v17', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v27', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -422,19 +411,60 @@
             document.getElementById('chart-pct-invest').textContent = pctInv + '%';
             document.getElementById('chart-pct-disposable').textContent = pctDisp + '%';
 
-            let healthHTML = '';
-            if (inc <= 0) {
-                healthHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方收入卡片設定。</p>`;
-            } else if (disp < 0) {
-                healthHTML = `<p class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> 警告：總支出與儲蓄配置已超過總收入！</p>`;
-            } else {
-                healthHTML = `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> 財務收支健康，每月享有 ${formatMoney(disp)} 自由支配金。</p>`;
-            }
-            document.getElementById('health-check-content').innerHTML = healthHTML;
-
+            renderRule361Card(inc, exp, res, inv, disp);
             updateDoughnutChart(exp, res, inv, Math.max(0, disp));
             renderPortfolioList();
             updateGrowthSimulation();
+        }
+
+        // ✅ 修正後的 361 理財診斷卡片：真實對齊固定必要支出 (exp) 趴數
+        function renderRule361Card(inc, exp, res, inv, disp) {
+            const container = document.getElementById('rule-361-content');
+            if (inc <= 0) {
+                container.innerHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方「每月稅後總收入」設定。</p>`;
+                return;
+            }
+
+            const expRatio = ((exp / inc) * 100).toFixed(1);
+            const investRatio = ((inv / inc) * 100).toFixed(1);
+            const reserveRatio = ((res / inc) * 100).toFixed(1);
+            const emergencyTarget = exp * 3;
+
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <ul class="space-y-2 text-xs">
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="flex items-center gap-1.5 font-bold text-slate-200">
+                                🛒 <strong>固定必要支出 (建議 60% 內)</strong>
+                            </span>
+                            <span class="${expRatio <= 60 ? 'text-emerald-400' : 'text-amber-400'} font-extrabold text-xs">
+                                ${expRatio}% (${formatMoney(exp)})
+                            </span>
+                        </li>
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="flex items-center gap-1.5 font-bold text-slate-200">
+                                📈 <strong>投資儲蓄/理財 (建議 30%)</strong>
+                            </span>
+                            <span class="${investRatio >= 30 ? 'text-emerald-400' : 'text-amber-400'} font-extrabold text-xs">
+                                ${investRatio}% (${formatMoney(inv)})
+                            </span>
+                        </li>
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="flex items-center gap-1.5 font-bold text-slate-200">
+                                🛡️ <strong>預留保障預算 (建議 10%)</strong>
+                            </span>
+                            <span class="${reserveRatio >= 10 ? 'text-emerald-400' : 'text-amber-400'} font-extrabold text-xs">
+                                ${reserveRatio}% (${formatMoney(res)})
+                            </span>
+                        </li>
+                    </ul>
+
+                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-teal-300 font-bold">
+                        <span class="flex items-center gap-1 text-[11px]"><i class="fa-solid fa-piggy-bank text-amber-400"></i> 建議準備緊急備用金 (月固定支出×3)：</span>
+                        <span class="text-white font-extrabold text-xs">${formatMoney(emergencyTarget)}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function updateDoughnutChart(exp, res, inv, disp) {
@@ -481,11 +511,10 @@
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
                         <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
-                        <div class="relative group/cagr inline-block cursor-help">
-                            <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i></span>
-                            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-60 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20">
-                                📊 <strong>CAGR（複合年均成長率）</strong> 代表預期年化報酬率（含股息複利累積）。
-                            </div>
+                        <div class="flex items-center gap-1 bg-teal-500/10 border border-teal-500/30 px-2 py-0.5 rounded-full text-[11px] font-bold text-teal-300">
+                            <span>CAGR:</span>
+                            <input type="number" value="${asset.cagr || 10}" step="0.1" class="asset-cagr-input w-12 bg-transparent text-teal-300 font-extrabold focus:outline-none focus:border-b border-teal-400 text-center" data-index="${index}">
+                            <span>%</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between sm:justify-end gap-3">
@@ -503,6 +532,14 @@
                     state.assets[e.target.dataset.index].monthlyAmount = Number(e.target.value) || 0;
                     saveState();
                     document.getElementById('total-portfolio-monthly').textContent = formatMoney(getTotalPortfolioMonthly());
+                    updateGrowthSimulation();
+                });
+            });
+
+            document.querySelectorAll('.asset-cagr-input').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    state.assets[e.target.dataset.index].cagr = Number(e.target.value) || 0;
+                    saveState();
                     updateGrowthSimulation();
                 });
             });
@@ -562,7 +599,7 @@
             });
         }
 
-        // Yahoo / AllOrigins API 連線查詢邏輯
+        // Yahoo / AllOrigins API 連線查詢邏輯 (無靜態資料庫)
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
@@ -578,7 +615,6 @@
             let stockData = null;
 
             try {
-                // 使用 AllOrigins API 作為高穩定代理連線
                 const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
 
@@ -602,7 +638,7 @@
                                 if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
                                     stockData = {
                                         ticker: formattedTicker,
-                                        name: stockDatabase[formattedTicker]?.name || meta.shortName || meta.symbol || formattedTicker,
+                                        name: meta.shortName || meta.symbol || (formattedTicker.includes('.TW') ? '台股標的' : '美股資產'),
                                         cagr: Number(calculatedCagr.toFixed(1))
                                     };
                                 }
@@ -611,16 +647,16 @@
                     }
                 }
             } catch (err) {
-                console.warn("API 請求受限，切換為備援庫", err);
+                console.warn("API 請求受限", err);
             }
 
             if (!stockData) {
-                if (stockDatabase[formattedTicker]) {
-                    stockData = { ticker: formattedTicker, name: stockDatabase[formattedTicker].name, cagr: stockDatabase[formattedTicker].cagr };
-                } else {
-                    stockData = { ticker: formattedTicker, name: formattedTicker.includes('.TW') ? '台股個股' : '美股資產', cagr: 9.5 };
-                }
-                statusMsg.innerText = `⚠️ 載入 ${formattedTicker} 資料庫備援試算數據。`;
+                stockData = { 
+                    ticker: formattedTicker, 
+                    name: formattedTicker.includes('.TW') ? '台股標的' : '美股資產', 
+                    cagr: 10.0 
+                };
+                statusMsg.innerText = `ℹ️ 已新增 ${formattedTicker}，請直接在下方卡片調整其 CAGR 年化報酬率。`;
             } else {
                 statusMsg.innerText = `✅ API 成功取得 ${stockData.name}，計算 5 年真實 CAGR 為 ${stockData.cagr}%`;
             }
@@ -686,7 +722,7 @@
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v17');
+            localStorage.removeItem('yinna_budget_state_v27');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
