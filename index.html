@@ -151,7 +151,7 @@
             <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
                 <div>
                     <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
-                        <i class="fa-solid fa-shield-halved text-teal-400"></i> 財務健康與 361 理財配置建議
+                        <i class="fa-solid fa-shield-halved text-teal-400"></i> 財務健康診斷與配置建議
                     </h3>
                     <div id="health-check-content" class="text-xs leading-relaxed text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2.5">
                         計算中...
@@ -178,7 +178,7 @@
             <!-- Search Bar -->
             <div class="bg-slate-900 p-5 rounded-2xl border border-emerald-500/30">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入股票代號（例：0050, 00878, 2618, NVDA）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入股票代號（例：0050, 00878, 2618, NVDA，按下 Enter 自動送出）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
                     <button id="ai-analyze-btn" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
                         <i class="fa-solid fa-plus"></i> <span id="analyze-btn-text">抓取數據並加入組合</span>
                     </button>
@@ -213,7 +213,7 @@
 
     <!-- Modals -->
     <div id="income-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-emerald-500/30 max-h-[90vh] flex flex-col">
+        <div class="glass-panel modal-content w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-emerald-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
                 <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sack-dollar text-emerald-400"></i> 每月稅後總收入管理</h3>
                 <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -228,7 +228,7 @@
 
     <!-- 固定支出 Modal -->
     <div id="expense-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30 max-h-[90vh] flex flex-col">
+        <div class="glass-panel modal-content w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
                 <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-receipt text-rose-400"></i> 固定必要支出管理</h3>
                 <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -243,7 +243,7 @@
 
     <!-- 預備金 Modal -->
     <div id="reserve-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 max-h-[90vh] flex flex-col">
+        <div class="glass-panel modal-content w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
                 <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-vault text-amber-400"></i> 預備金撥入管理</h3>
                 <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -256,8 +256,9 @@
         </div>
     </div>
 
+    <!-- 長期儲蓄 / 投資 Modal -->
     <div id="invest-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 border border-indigo-500/30">
+        <div class="glass-panel modal-content w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 border border-indigo-500/30">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-line text-indigo-400"></i> 長期儲蓄 / 投資金額設定</h3>
                 <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -266,8 +267,11 @@
                 <label class="block text-xs font-bold text-slate-300">每月固定投入長期儲蓄與投資金額</label>
                 <div class="relative">
                     <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">NT$</span>
-                    <input type="number" id="modal-input-invest" value="15000" min="0" step="1000" class="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-extrabold text-white focus:outline-none focus:border-indigo-500">
+                    <input type="number" id="modal-input-invest" value="10000" min="0" step="1000" class="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-extrabold text-white focus:outline-none focus:border-indigo-500">
                 </div>
+                <button id="fill-remaining-btn" class="w-full py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold text-xs rounded-xl border border-indigo-500/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-arrow-down-short-wide"></i> 將剩餘零用金全數投入
+                </button>
             </div>
         </div>
     </div>
@@ -290,21 +294,24 @@
 
         const defaultData = {
             incomes: [{ id: 1, name: "主業薪資", amount: 50000 }],
-            expenses: [{ id: 1, name: "固定支出", amount: 25000 }],
+            expenses: [
+                { id: 1, name: "房租", amount: 15000 },
+                { id: 2, name: "飲食", amount: 12000 }
+            ],
             reserves: [{ id: 1, name: "緊急預備金", amount: 5000 }],
-            investment: 15000,
+            investment: 10000,
             simYears: 20,
             assets: [
-                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 10000, cagr: 11.5, risk: "中高風險" },
+                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 5000, cagr: 11.5, risk: "中高風險" },
                 { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v19')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v22')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v19', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v22', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -486,6 +493,17 @@
         document.getElementById('add-reserve-btn').addEventListener('click', () => { state.reserves.push({ id: Date.now(), name: "新預備金項目", amount: 2000 }); saveState(); renderReserveList(); updateAllUI(); });
         document.getElementById('modal-input-invest').addEventListener('input', (e) => { state.investment = Number(e.target.value) || 0; saveState(); updateAllUI(); });
 
+        document.getElementById('fill-remaining-btn').addEventListener('click', () => {
+            const inc = getTotalIncomes(), exp = getTotalExpenses(), res = getTotalReserves();
+            const remainingPool = inc - exp - res;
+            
+            const maxFill = Math.max(0, remainingPool);
+            state.investment = maxFill;
+            document.getElementById('modal-input-invest').value = maxFill;
+            saveState();
+            updateAllUI();
+        });
+
         function updateAllUI() {
             const inc = getTotalIncomes(), exp = getTotalExpenses(), res = getTotalReserves(), inv = Number(state.investment) || 0;
             const disp = inc - exp - res - inv;
@@ -511,7 +529,6 @@
             document.getElementById('chart-pct-invest').textContent = pctInv + '%';
             document.getElementById('chart-pct-disposable').textContent = pctDisp + '%';
 
-            // 核心 361 法則與緊急預備金診斷邏輯
             let healthHTML = '';
             if (inc <= 0) {
                 healthHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方收入卡片設定。</p>`;
@@ -519,21 +536,16 @@
                 healthHTML = `<p class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> 警告：總支出與儲蓄配置已超過總收入！</p>`;
             } else {
                 const livingRatio = ((exp + Math.max(0, disp)) / inc * 100).toFixed(1);
-                const investRatio = (inv / inc * 100).toFixed(1);
                 const reserveRatio = (res / inc * 100).toFixed(1);
-                const emergencyFundTarget = exp * 3; // 薪水/支出 * 3 緊急備用金目標
+                const emergencyFundTarget = exp * 3;
 
                 healthHTML = `
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-slate-200 font-bold border-b border-slate-800 pb-1">
-                            <span>📊 361 理財黃金比例檢視：</span>
+                            <span>📊 財務配置檢視：</span>
                             <span class="text-emerald-400">健康收支</span>
                         </div>
                         <ul class="space-y-1.5 text-[11px] text-slate-300">
-                            <li class="flex items-center justify-between">
-                                <span>🎯 <strong>投資儲蓄理財 (建議 30%)</strong>：</span>
-                                <span class="${investRatio >= 30 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}">${investRatio}% (NT$ ${inv.toLocaleString()})</span>
-                            </li>
                             <li class="flex items-center justify-between">
                                 <span>🛒 <strong>生活費上限 (建議 60% 內)</strong>：</span>
                                 <span class="${livingRatio <= 60 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}">${livingRatio}% (NT$ ${(exp + Math.max(0, disp)).toLocaleString()})</span>
@@ -559,17 +571,63 @@
 
         function updateDoughnutChart(exp, res, inv, disp) {
             const ctx = document.getElementById('allocation-chart').getContext('2d');
+            
             let items = [
-                { label: '固定支出', value: exp, color: '#f43f5e' },
-                { label: '預備金', value: res, color: '#f59e0b' },
-                { label: '長期投資', value: inv, color: '#6366f1' },
-                { label: '自由零用', value: disp, color: '#34d399' }
+                { 
+                    label: '固定支出', 
+                    value: exp, 
+                    color: '#f43f5e',
+                    subItems: state.expenses.map(i => ({ name: i.name || '支出項目', amount: Number(i.amount)||0 }))
+                },
+                { 
+                    label: '預備金', 
+                    value: res, 
+                    color: '#f59e0b',
+                    subItems: state.reserves.map(i => ({ name: i.name || '預備金項目', amount: Number(i.amount)||0 }))
+                },
+                { 
+                    label: '長期投資', 
+                    value: inv, 
+                    color: '#6366f1',
+                    subItems: state.assets.map(a => ({ name: `${a.ticker} (${a.name})`, amount: Number(a.monthlyAmount)||0 }))
+                },
+                { 
+                    label: '自由零用', 
+                    value: disp, 
+                    color: '#34d399',
+                    subItems: [{ name: '可自由支配餘額', amount: disp }]
+                }
             ].sort((a, b) => b.value - a.value);
+
+            const tooltipOptions = {
+                callbacks: {
+                    title: function(tooltipItems) { return tooltipItems[0].label; },
+                    label: function(context) {
+                        const itemIndex = context.dataIndex;
+                        const mainItem = items[itemIndex];
+                        const totalInc = getTotalIncomes();
+                        const mainPct = totalInc > 0 ? ((mainItem.value / totalInc) * 100).toFixed(1) : 0;
+
+                        let lines = [`總計: NT$ ${mainItem.value.toLocaleString()} (${mainPct}%)`];
+                        
+                        if (mainItem.subItems && mainItem.subItems.length > 0) {
+                            lines.push('────────────────');
+                            mainItem.subItems.forEach(sub => {
+                                if (sub.amount > 0) {
+                                    lines.push(`• ${sub.name}: NT$ ${sub.amount.toLocaleString()}`);
+                                }
+                            });
+                        }
+                        return lines;
+                    }
+                }
+            };
 
             if (allocationChart) {
                 allocationChart.data.labels = items.map(i => i.label);
                 allocationChart.data.datasets[0].data = items.map(i => i.value);
                 allocationChart.data.datasets[0].backgroundColor = items.map(i => i.color);
+                allocationChart.options.plugins.tooltip = tooltipOptions;
                 allocationChart.update();
                 return;
             }
@@ -580,7 +638,15 @@
                     labels: items.map(i => i.label),
                     datasets: [{ data: items.map(i => i.value), backgroundColor: items.map(i => i.color), borderWidth: 0 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { color: '#94a3b8', font: { size: 11 } } },
+                        tooltip: tooltipOptions
+                    }
+                }
             });
         }
 
@@ -682,8 +748,8 @@
             });
         }
 
-        // Yahoo / AllOrigins API 連線查詢邏輯
-        document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
+        // 核心查詢函數（供按鈕與 Enter 鍵共用）
+        async function fetchAndAddAsset() {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
 
@@ -759,6 +825,15 @@
 
             btnText.innerText = "抓取數據並加入組合";
             document.getElementById('ai-ticker-input').value = '';
+        }
+
+        // 監聽點擊按鈕與 Enter 鍵觸發
+        document.getElementById('ai-analyze-btn').addEventListener('click', fetchAndAddAsset);
+        document.getElementById('ai-ticker-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                fetchAndAddAsset();
+            }
         });
 
         document.getElementById('sync-invest-btn').addEventListener('click', () => {
@@ -802,10 +877,18 @@
                     });
                 });
             });
+
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) {
+                        backdrop.classList.add('hidden');
+                    }
+                });
+            });
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v19');
+            localStorage.removeItem('yinna_budget_state_v22');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
