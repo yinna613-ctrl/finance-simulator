@@ -7,7 +7,41 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+let twseStockCache = null;
+let twseStockCacheAt = 0;
+const TWSE_STOCK_ENDPOINT = 'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_AVG_ALL';
+
+// Proxy TWSE's public stock list so pages opened from file:// or GitHub Pages
+// do not depend on the browser being allowed to read TWSE cross-origin.
+app.get('/api/twse/stocks', async (_req, res) => {
+    if (twseStockCache && Date.now() - twseStockCacheAt < 60 * 1000) {
+        res.set('Cache-Control', 'public, max-age=60');
+        return res.json(twseStockCache);
+    }
+
+    try {
+        const response = await fetch(TWSE_STOCK_ENDPOINT, {
+            headers: { Accept: 'application/json' }
+        });
+        if (!response.ok) {
+            return res.status(response.status).json({ error: `TWSE API 回應 ${response.status}` });
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+            return res.status(502).json({ error: 'TWSE API 回傳格式不是清單' });
+        }
+
+        twseStockCache = data;
+        twseStockCacheAt = Date.now();
+        res.set('Cache-Control', 'public, max-age=60');
+        return res.json(data);
+    } catch (error) {
+        console.error('TWSE API proxy error:', error);
+        return res.status(502).json({ error: '目前無法連線至 TWSE API' });
+    }
+});
 
 // Read GEMINI_API_KEY from Vercel Environment Variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
@@ -115,7 +149,7 @@ app.post('/api/analyze', async (req, res) => {
 
 // Serve frontend for all other routes
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // For Vercel Serverless Function export

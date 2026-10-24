@@ -168,7 +168,7 @@
                     <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> 多標的投資組合與複利模擬器
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, NVDA）自動連線 API 計算真實歷史年化報酬率 (CAGR)</p>
+                    <p class="text-xs text-slate-400 mt-0.5">查詢上市台股最新收盤價與月平均價；複利試算使用年化報酬假設，不代表歷史績效或未來保證。</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <button id="sync-invest-btn" class="px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg border border-indigo-500/30 cursor-pointer">平均平分長期儲蓄</button>
@@ -179,9 +179,9 @@
             <!-- Search Bar -->
             <div class="bg-slate-900 p-5 rounded-2xl border border-emerald-500/30">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入股票代號（例：0050, 00878, 2618, NVDA）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入上市台股代碼（例：0050、00878、2330）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
                     <button id="ai-analyze-btn" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-plus"></i> <span id="analyze-btn-text">抓取數據並加入組合</span>
+                        <i class="fa-solid fa-plus"></i> <span id="analyze-btn-text">查詢 TWSE 並加入組合</span>
                     </button>
                 </div>
                 <p id="api-status-msg" class="text-[11px] text-slate-400 mt-2 hidden"></p>
@@ -306,6 +306,16 @@
         let state = JSON.parse(localStorage.getItem('yinna_budget_state_v28')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
+        let twseStockDataCache = null;
+        let twseStockDataFetchedAt = 0;
+        // 留空時使用同網域後端；若前端部署在 GitHub Pages，填入 Vercel 專案網址。
+        const TWSE_PROXY_BASE_URL = '';
+        function getTwseProxyUrl() {
+            if (location.protocol === 'file:') {
+                throw new Error('請先啟動專案伺服器，並透過 http://localhost:3000 開啟網頁。');
+            }
+            return `${TWSE_PROXY_BASE_URL.replace(/\/$/, '')}/api/twse/stocks`;
+        }
 
         function saveState() { localStorage.setItem('yinna_budget_state_v28', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -313,6 +323,34 @@
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalPortfolioMonthly() { return state.assets.reduce((s, i) => s + (Number(i.monthlyAmount)||0), 0); }
         function formatMoney(amount) { return 'NT$ ' + Number(amount).toLocaleString('zh-TW'); }
+        function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]); }
+        function parseTwsePrice(value) {
+            const parsed = Number(String(value ?? '').replace(/,/g, '').trim());
+            return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+        }
+        function formatTwsePrice(value) {
+            return value == null ? '—' : Number(value).toLocaleString('zh-TW', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function normalizeTwseTicker(value) { return String(value ?? '').trim().toUpperCase().replace(/\.TW$/, ''); }
+        async function getTwseStockData(forceRefresh = false) {
+            const cacheIsFresh = twseStockDataCache && Date.now() - twseStockDataFetchedAt < 5 * 60 * 1000;
+            if (!forceRefresh && cacheIsFresh) return twseStockDataCache;
+
+            const response = await fetch(getTwseProxyUrl(), { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`TWSE API 回應 ${response.status}`);
+            const data = await response.json();
+            if (!Array.isArray(data)) throw new Error('TWSE API 回傳格式不是清單');
+
+            twseStockDataCache = data;
+            twseStockDataFetchedAt = Date.now();
+            return data;
+        }
+        function applyTwseQuote(asset, quote) {
+            asset.name = quote.Name || asset.name;
+            asset.latestClose = parseTwsePrice(quote.ClosingPrice);
+            asset.monthlyAveragePrice = parseTwsePrice(quote.MonthlyAveragePrice);
+            asset.quoteDate = quote.Date || '';
+        }
 
         function renderIncomeList() {
             const container = document.getElementById('income-list');
@@ -680,14 +718,10 @@
                 row.className = 'flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950 p-3 rounded-xl border border-emerald-500/30';
                 row.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
-                        <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
-                        <div class="relative group/cagr inline-block cursor-help">
-                            <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i></span>
-                            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-60 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20">
-                                📊 <strong>CAGR（複合年均成長率）</strong> 代表預期年化報酬率（含股息複利累積）。
-                            </div>
-                        </div>
+                        <span class="font-black text-sm text-emerald-400 min-w-[60px]">${escapeHtml(asset.ticker)}</span>
+                        <span class="text-xs text-slate-300 font-bold">${escapeHtml(asset.name)}</span>
+                        <label class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-1 rounded-full border border-teal-500/20" title="這是複利試算用的假設，不是 TWSE API 提供的歷史報酬率。">試算年化假設 <input type="number" value="${Number(asset.cagr) || 0}" min="0" max="100" step="0.1" class="asset-cagr-input w-12 bg-transparent text-right font-black focus:outline-none" data-index="${index}">%</label>
+                        <span class="w-full text-[11px] text-slate-400">收盤 ${formatTwsePrice(asset.latestClose)}　月均 ${formatTwsePrice(asset.monthlyAveragePrice)}${asset.quoteDate ? `　資料日 ${escapeHtml(asset.quoteDate)}` : '　尚未取得行情'}</span>
                     </div>
                     <div class="flex items-center justify-between sm:justify-end gap-3">
                         <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-36 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400" data-index="${index}">
@@ -704,6 +738,14 @@
                     state.assets[e.target.dataset.index].monthlyAmount = Number(e.target.value) || 0;
                     saveState();
                     document.getElementById('total-portfolio-monthly').textContent = formatMoney(getTotalPortfolioMonthly());
+                    updateGrowthSimulation();
+                });
+            });
+
+            document.querySelectorAll('.asset-cagr-input').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    state.assets[e.target.dataset.index].cagr = Number(e.target.value) || 0;
+                    saveState();
                     updateGrowthSimulation();
                 });
             });
@@ -738,7 +780,7 @@
                 }
 
                 return {
-                    label: `${asset.ticker} (${asset.cagr}%)`,
+                    label: `${asset.ticker} (試算 ${asset.cagr}%)`,
                     data: dataPoints,
                     backgroundColor: colors[idx % colors.length]
                 };
@@ -763,85 +805,94 @@
             });
         }
 
-        // Yahoo / AllOrigins API 連線查詢邏輯（使用 B 版程式碼）
+        // TWSE 公開 API：取得上市台股最新收盤價及月平均價，不需要 API 金鑰。
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
 
-            const formattedTicker = /^\d+$/.test(inputVal) ? `${inputVal}.TW` : inputVal;
+            const code = normalizeTwseTicker(inputVal);
+            const ticker = `${code}.TW`;
+            const btn = document.getElementById('ai-analyze-btn');
             const btnText = document.getElementById('analyze-btn-text');
             const statusMsg = document.getElementById('api-status-msg');
-
-            btnText.innerText = "查詢中...";
             statusMsg.classList.remove('hidden');
-            statusMsg.innerText = `連線網路 API 查詢 ${formattedTicker} 過去 5 年數據...`;
 
-            let stockData = null;
+            if (!/^\d{2,6}$/.test(code)) {
+                statusMsg.innerText = '此 API 僅提供上市台股，請輸入數字股票代碼。';
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.innerText = '查詢 TWSE 中...';
+            statusMsg.innerText = `正在查詢 TWSE 上市股票 ${code}...`;
 
             try {
-                // 使用 AllOrigins API 作為高穩定代理連線
-                const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
-
-                const response = await fetch(proxyUrl);
-                if (response.ok) {
-                    const outerData = await response.json();
-                    if (outerData.contents) {
-                        const data = JSON.parse(outerData.contents);
-                        const result = data.chart?.result?.[0];
-
-                        if (result) {
-                            const meta = result.meta;
-                            const quotes = result.indicators?.quote?.[0]?.close || [];
-                            const validPrices = quotes.filter(p => p !== null && p > 0);
-
-                            if (validPrices.length >= 2) {
-                                const startPrice = validPrices[0];
-                                const endPrice = meta.regularMarketPrice || validPrices[validPrices.length - 1];
-                                let calculatedCagr = (Math.pow(endPrice / startPrice, 1 / 5) - 1) * 100;
-                                
-                                if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
-                                    stockData = {
-                                        ticker: formattedTicker,
-                                        name: stockDatabase[formattedTicker]?.name || meta.shortName || meta.symbol || formattedTicker,
-                                        cagr: Number(calculatedCagr.toFixed(1))
-                                    };
-                                }
-                            }
-                        }
-                    }
+                const stockRows = await getTwseStockData(true);
+                const quote = stockRows.find(row => String(row.Code ?? '').trim() === code);
+                if (!quote) {
+                    statusMsg.innerText = `TWSE 最新資料中找不到 ${code}；請確認代碼，或確認它是否為上市股票。`;
+                    return;
                 }
-            } catch (err) {
-                console.warn("API 請求受限，切換為備援庫", err);
-            }
 
-            if (!stockData) {
-                if (stockDatabase[formattedTicker]) {
-                    stockData = { ticker: formattedTicker, name: stockDatabase[formattedTicker].name, cagr: stockDatabase[formattedTicker].cagr };
+                const existing = state.assets.find(asset => normalizeTwseTicker(asset.ticker) === code);
+                if (existing) {
+                    applyTwseQuote(existing, quote);
                 } else {
-                    stockData = { ticker: formattedTicker, name: formattedTicker.includes('.TW') ? '台股個股' : '美股資產', cagr: 9.5 };
+                    const preset = stockDatabase[ticker] || {};
+                    const newAsset = {
+                        ticker,
+                        name: quote.Name || preset.name || ticker,
+                        monthlyAmount: 5000,
+                        // TWSE 這支 API 不含歷史報酬；未預設的標的採 8% 試算假設，可自行調整。
+                        cagr: Number(preset.cagr) || 8,
+                        risk: preset.risk || '未評估'
+                    };
+                    applyTwseQuote(newAsset, quote);
+                    state.assets.push(newAsset);
                 }
-                statusMsg.innerText = `⚠️ 載入 ${formattedTicker} 資料庫備援試算數據。`;
-            } else {
-                statusMsg.innerText = `✅ API 成功取得 ${stockData.name}，計算 5 年真實 CAGR 為 ${stockData.cagr}%`;
-            }
 
-            const existing = state.assets.find(a => a.ticker.toUpperCase() === stockData.ticker);
-            if (!existing) {
-                state.assets.push({
-                    ticker: stockData.ticker,
-                    name: stockData.name,
-                    monthlyAmount: 5000,
-                    cagr: stockData.cagr
-                });
                 saveState();
                 renderPortfolioList();
                 updateGrowthSimulation();
+                statusMsg.innerText = `✅ 已從 TWSE 取得 ${quote.Name || code} 行情：收盤 ${formatTwsePrice(parseTwsePrice(quote.ClosingPrice))}、月均 ${formatTwsePrice(parseTwsePrice(quote.MonthlyAveragePrice))}（${quote.Date || '最新資料'}）。`;
+                document.getElementById('ai-ticker-input').value = '';
+            } catch (error) {
+                console.error('TWSE API 查詢失敗：', error);
+                statusMsg.innerText = location.protocol === 'file:'
+                    ? '❌ 無法從 file:// 直接查詢。請在專案資料夾執行 npm install、npm start，再開啟 http://localhost:3000。'
+                    : '❌ 無法讀取行情。若前端部署在 GitHub Pages，請在程式中將 TWSE_PROXY_BASE_URL 設為 Vercel 專案網址。';
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = '查詢 TWSE 並加入組合';
             }
-
-            btnText.innerText = "抓取數據並加入組合";
-            document.getElementById('ai-ticker-input').value = '';
         });
+
+        async function refreshPortfolioQuotes() {
+            if (!state.assets.length) return;
+            const statusMsg = document.getElementById('api-status-msg');
+            try {
+                const stockRows = await getTwseStockData();
+                let changed = false;
+                state.assets.forEach(asset => {
+                    const code = normalizeTwseTicker(asset.ticker);
+                    const quote = stockRows.find(row => String(row.Code ?? '').trim() === code);
+                    if (quote) {
+                        applyTwseQuote(asset, quote);
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    saveState();
+                    renderPortfolioList();
+                }
+            } catch (error) {
+                console.warn('載入 TWSE 行情失敗：', error);
+                statusMsg.classList.remove('hidden');
+                statusMsg.innerText = location.protocol === 'file:'
+                    ? '目前是直接開啟 HTML 檔。請執行 npm install、npm start，並從 http://localhost:3000 開啟。'
+                    : '目前無法載入 TWSE 行情；若部署於 GitHub Pages，請設定 TWSE_PROXY_BASE_URL 指向 Vercel。';
+            }
+        }
 
         document.getElementById('sync-invest-btn').addEventListener('click', () => {
             const totalInv = Number(state.investment) || 0;
@@ -902,7 +953,7 @@
         });
 
         document.getElementById('sim-years-slider').addEventListener('input', updateGrowthSimulation);
-        window.onload = function() { setupModals(); updateAllUI(); };
+        window.onload = function() { setupModals(); updateAllUI(); refreshPortfolioQuotes(); };
     </script>
 </body>
 </html>
