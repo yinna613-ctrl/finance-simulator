@@ -147,7 +147,7 @@
                 </div>
             </div>
 
-            <!-- 獨立 361 理財黃金比例 Card -->
+            <!-- 獨立 361 理財黃金比例 Card (保留 A 版功能) -->
             <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between border border-teal-500/20">
                 <div>
                     <h3 class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
@@ -161,7 +161,7 @@
             </div>
         </div>
 
-        <!-- Simulator Section -->
+        <!-- Simulator Section (採用 B 版程式碼架構) -->
         <div class="glass-panel rounded-2xl p-6 shadow-xl space-y-6 border border-emerald-500/20">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
@@ -267,6 +267,7 @@
                     <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">NT$</span>
                     <input type="number" id="modal-input-invest" value="15000" min="0" step="1000" class="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-extrabold text-white focus:outline-none focus:border-indigo-500">
                 </div>
+                <!-- 保留 A 版：零用金全數投入按鈕 -->
                 <button id="fill-remaining-btn" class="w-full py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold text-xs rounded-xl border border-indigo-500/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-arrow-down-short-wide"></i> 將剩餘零用金全數投入
                 </button>
@@ -335,7 +336,7 @@
             attachIncomeEvents();
         }
 
-        // 功能 1：固定支出與預備金支援 % 數與金額雙向動態計算
+        // 保留 A 版：固定支出與預備金支援 % 數與金額雙向動態計算
         function renderExpenseList() {
             const container = document.getElementById('expense-list');
             container.innerHTML = '';
@@ -489,7 +490,7 @@
         document.getElementById('add-reserve-btn').addEventListener('click', () => { state.reserves.push({ id: Date.now(), name: "新預備金項目", amount: 2000 }); saveState(); renderReserveList(); updateAllUI(); });
         document.getElementById('modal-input-invest').addEventListener('input', (e) => { state.investment = Number(e.target.value) || 0; saveState(); updateAllUI(); });
 
-        // 功能 4：將剩餘零用金全數投入按鈕
+        // 保留 A 版：將剩餘零用金全數投入按鈕
         document.getElementById('fill-remaining-btn').addEventListener('click', () => {
             const inc = getTotalIncomes(), exp = getTotalExpenses(), res = getTotalReserves();
             const maxFill = Math.max(0, inc - exp - res);
@@ -530,6 +531,7 @@
             updateGrowthSimulation();
         }
 
+        // 保留 A 版：361 理財黃金比例卡片診斷
         function renderRule361Card(inc, exp, res, inv, disp) {
             const container = document.getElementById('rule-361-content');
             if (inc <= 0) {
@@ -579,7 +581,7 @@
             `;
         }
 
-        // 功能 3：圓餅圖懸停顯示真實細項與金額
+        // 保留 A 版：圓餅圖懸停顯示真實細項與金額
         function updateDoughnutChart(exp, res, inv, disp) {
             const ctx = document.getElementById('allocation-chart').getContext('2d');
             
@@ -661,7 +663,8 @@
             });
         }
 
-        // 功能 5：保留完全一致的投資組合，並加上 CAGR 懸停解釋 Popup
+        /* ===== 以下採用 B 版的多標的投資組合與複利模擬器相關程式碼 ===== */
+
         function renderPortfolioList() {
             const container = document.getElementById('portfolio-list-container');
             container.innerHTML = '';
@@ -679,7 +682,6 @@
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
                         <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
-                        
                         <div class="relative group/cagr inline-block cursor-help">
                             <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i></span>
                             <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-60 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20">
@@ -688,8 +690,8 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-between sm:justify-end gap-3">
-                        <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-36 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500" data-index="${index}">
-                        <button class="remove-asset-btn text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-36 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400" data-index="${index}">
+                        <button class="remove-asset-btn text-slate-500 hover:text-rose-400 p-1 cursor-pointer" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>
                 `;
                 container.appendChild(row);
@@ -761,7 +763,7 @@
             });
         }
 
-        // Yahoo / AllOrigins API 連線查詢邏輯 (完整保留您最新的 API + stockDatabase 備援機制)
+        // Yahoo / AllOrigins API 連線查詢邏輯（使用 B 版程式碼）
         document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
@@ -777,6 +779,7 @@
             let stockData = null;
 
             try {
+                // 使用 AllOrigins API 作為高穩定代理連線
                 const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
 
@@ -859,7 +862,7 @@
             }
         });
 
-        // 功能 2：支援點擊 Modal 背景空白處與關閉按鈕一併關閉彈窗
+        // 保留 A 版：支援點擊 Modal 背景空白處關閉彈窗
         function setupModals() {
             const modals = {
                 'open-income-modal': { modal: 'income-modal', render: renderIncomeList },
