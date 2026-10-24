@@ -122,28 +122,41 @@
             </div>
         </div>
 
-        <!-- Allocation Chart Section (已移除財務健康診斷) -->
-        <div class="w-full">
-            <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+        <!-- Allocation Chart & 361 Card Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- 圖表 Card -->
+            <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-pie text-emerald-400"></i> 每月財務比例分布圖
                 </h3>
                 <div class="relative h-64 w-full flex items-center justify-center">
                     <canvas id="allocation-chart"></canvas>
                 </div>
-                <!-- 保留完整的 361 理財比例 (包含 30% 儲蓄投資/理財) -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-slate-800">
-                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
-                        <span>固定支出 (建議60%內)：</span><span id="chart-pct-expenses" class="font-bold text-rose-400">0%</span>
+                <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800">
+                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
+                        <span>固定支出：</span><span id="chart-pct-expenses" class="font-bold">0%</span>
                     </div>
-                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
-                        <span>預備金 (建議10%)：</span><span id="chart-pct-reserves" class="font-bold text-amber-400">0%</span>
+                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
+                        <span>預備金：</span><span id="chart-pct-reserves" class="font-bold">0%</span>
                     </div>
-                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
-                        <span>長期儲蓄/投資 (30%)：</span><span id="chart-pct-invest" class="font-bold text-indigo-400">0%</span>
+                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
+                        <span>長期投資：</span><span id="chart-pct-invest" class="font-bold">0%</span>
                     </div>
-                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
-                        <span>自由零用金：</span><span id="chart-pct-disposable" class="font-bold text-emerald-400">0%</span>
+                    <div class="flex justify-between items-center text-slate-300 bg-slate-900/50 p-2 rounded-xl">
+                        <span>自由零用：</span><span id="chart-pct-disposable" class="font-bold">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 獨立 361 理財黃金比例 Card -->
+            <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between border border-teal-500/20">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-chart-line text-teal-400"></i> 361 理財黃金比例與備用金診斷</span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20">理財法則</span>
+                    </h3>
+                    <div id="rule-361-content" class="text-xs leading-relaxed text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3">
+                        計算中...
                     </div>
                 </div>
             </div>
@@ -296,11 +309,11 @@
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v23')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v24')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v23', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v24', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -518,9 +531,63 @@
             document.getElementById('chart-pct-invest').textContent = pctInv + '%';
             document.getElementById('chart-pct-disposable').textContent = pctDisp + '%';
 
+            // 渲染獨立的 361 理財 Card 數據
+            renderRule361Card(inc, exp, res, inv, disp);
+
             updateDoughnutChart(exp, res, inv, Math.max(0, disp));
             renderPortfolioList();
             updateGrowthSimulation();
+        }
+
+        // 獨立 361 理財 Card 的渲染邏輯
+        function renderRule361Card(inc, exp, res, inv, disp) {
+            const container = document.getElementById('rule-361-content');
+            if (inc <= 0) {
+                container.innerHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方「每月稅後總收入」設定。</p>`;
+                return;
+            }
+
+            const livingTotal = exp + Math.max(0, disp);
+            const livingRatio = ((livingTotal / inc) * 100).toFixed(1);
+            const investRatio = ((inv / inc) * 100).toFixed(1);
+            const reserveRatio = ((res / inc) * 100).toFixed(1);
+            const emergencyTarget = exp * 3;
+
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <ul class="space-y-2 text-xs">
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="flex items-center gap-1.5 font-bold text-slate-200">
+                                🛒 <strong>生活費 (建議 60% 內)</strong>
+                            </span>
+                            <span class="${livingRatio <= 60 ? 'text-emerald-400' : 'text-amber-400'} font-extrabold text-xs">
+                                ${livingRatio}% (NT$ ${livingTotal.toLocaleString()})
+                            </span>
+                        </li>
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="flex items-center gap-1.5 font-bold text-slate-200">
+                                📈 <strong>投資儲蓄/理財 (建議 30%)</strong>
+                            </span>
+                            <span class="${investRatio >= 30 ? 'text-emerald-400' : 'text-amber-400'} font-extrabold text-xs">
+                                ${investRatio}% (NT$ ${inv.toLocaleString()})
+                            </span>
+                        </li>
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="flex items-center gap-1.5 font-bold text-slate-200">
+                                🛡️ <strong>預留保障預算 (建議 10%)</strong>
+                            </span>
+                            <span class="${reserveRatio >= 10 ? 'text-emerald-400' : 'text-amber-400'} font-extrabold text-xs">
+                                ${reserveRatio}% (NT$ ${res.toLocaleString()})
+                            </span>
+                        </li>
+                    </ul>
+
+                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-teal-300 font-bold">
+                        <span class="flex items-center gap-1 text-[11px]"><i class="fa-solid fa-piggy-bank text-amber-400"></i> 建議準備緊急備用金 (月固定支出×3)：</span>
+                        <span class="text-white font-extrabold text-xs">NT$ ${emergencyTarget.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function updateDoughnutChart(exp, res, inv, disp) {
@@ -840,7 +907,7 @@
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v23');
+            localStorage.removeItem('yinna_budget_state_v24');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
