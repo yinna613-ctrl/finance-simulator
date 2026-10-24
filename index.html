@@ -147,12 +147,13 @@
                 </div>
             </div>
 
+            <!-- 財務健康診斷報告 -->
             <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
                 <div>
                     <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
-                        <i class="fa-solid fa-shield-halved text-teal-400"></i> 財務健康診斷報告
+                        <i class="fa-solid fa-shield-halved text-teal-400"></i> 財務健康與 361 理財配置建議
                     </h3>
-                    <div id="health-check-content" class="text-xs leading-relaxed text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <div id="health-check-content" class="text-xs leading-relaxed text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2.5">
                         計算中...
                     </div>
                 </div>
@@ -225,7 +226,7 @@
         </div>
     </div>
 
-    <!-- 固定支出 Modal (含金額與百分比同步) -->
+    <!-- 固定支出 Modal -->
     <div id="expense-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="glass-panel w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
@@ -240,7 +241,7 @@
         </div>
     </div>
 
-    <!-- 預備金 Modal (含金額與百分比同步) -->
+    <!-- 預備金 Modal -->
     <div id="reserve-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="glass-panel w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
@@ -299,11 +300,11 @@
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v18')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v19')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v18', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v19', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -403,7 +404,6 @@
         function attachExpenseEvents() {
             document.querySelectorAll('.expense-name').forEach(el => { el.addEventListener('input', (e) => { state.expenses[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
             
-            // 金額輸入 -> 計算百分比
             document.querySelectorAll('.expense-amount').forEach(el => { 
                 el.addEventListener('input', (e) => { 
                     const idx = e.target.dataset.index;
@@ -420,7 +420,6 @@
                 }); 
             });
 
-            // 百分比輸入 -> 計算金額
             document.querySelectorAll('.expense-pct').forEach(el => { 
                 el.addEventListener('input', (e) => { 
                     const idx = e.target.dataset.index;
@@ -445,7 +444,6 @@
         function attachReserveEvents() {
             document.querySelectorAll('.reserve-name').forEach(el => { el.addEventListener('input', (e) => { state.reserves[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
             
-            // 金額輸入 -> 計算百分比
             document.querySelectorAll('.reserve-amount').forEach(el => { 
                 el.addEventListener('input', (e) => { 
                     const idx = e.target.dataset.index;
@@ -462,7 +460,6 @@
                 }); 
             });
 
-            // 百分比輸入 -> 計算金額
             document.querySelectorAll('.reserve-pct').forEach(el => { 
                 el.addEventListener('input', (e) => { 
                     const idx = e.target.dataset.index;
@@ -514,13 +511,44 @@
             document.getElementById('chart-pct-invest').textContent = pctInv + '%';
             document.getElementById('chart-pct-disposable').textContent = pctDisp + '%';
 
+            // 核心 361 法則與緊急預備金診斷邏輯
             let healthHTML = '';
             if (inc <= 0) {
                 healthHTML = `<p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 尚未設定收入來源，請點擊上方收入卡片設定。</p>`;
             } else if (disp < 0) {
                 healthHTML = `<p class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> 警告：總支出與儲蓄配置已超過總收入！</p>`;
             } else {
-                healthHTML = `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> 財務收支健康，每月享有 ${formatMoney(disp)} 自由支配金。</p>`;
+                const livingRatio = ((exp + Math.max(0, disp)) / inc * 100).toFixed(1);
+                const investRatio = (inv / inc * 100).toFixed(1);
+                const reserveRatio = (res / inc * 100).toFixed(1);
+                const emergencyFundTarget = exp * 3; // 薪水/支出 * 3 緊急備用金目標
+
+                healthHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-slate-200 font-bold border-b border-slate-800 pb-1">
+                            <span>📊 361 理財黃金比例檢視：</span>
+                            <span class="text-emerald-400">健康收支</span>
+                        </div>
+                        <ul class="space-y-1.5 text-[11px] text-slate-300">
+                            <li class="flex items-center justify-between">
+                                <span>🎯 <strong>投資儲蓄理財 (建議 30%)</strong>：</span>
+                                <span class="${investRatio >= 30 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}">${investRatio}% (NT$ ${inv.toLocaleString()})</span>
+                            </li>
+                            <li class="flex items-center justify-between">
+                                <span>🛒 <strong>生活費上限 (建議 60% 內)</strong>：</span>
+                                <span class="${livingRatio <= 60 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}">${livingRatio}% (NT$ ${(exp + Math.max(0, disp)).toLocaleString()})</span>
+                            </li>
+                            <li class="flex items-center justify-between">
+                                <span>🛡️ <strong>預留保障預算 (建議 10%)</strong>：</span>
+                                <span class="${reserveRatio >= 10 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}">${reserveRatio}% (NT$ ${res.toLocaleString()})</span>
+                            </li>
+                        </ul>
+                        <div class="pt-2 border-t border-slate-800/80 text-teal-300 font-bold flex items-center justify-between">
+                            <span>🚨 建議準備緊急備用金 (月固定支出×3)：</span>
+                            <span class="text-white font-extrabold text-xs">NT$ ${emergencyFundTarget.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
             }
             document.getElementById('health-check-content').innerHTML = healthHTML;
 
@@ -777,7 +805,7 @@
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v18');
+            localStorage.removeItem('yinna_budget_state_v19');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
