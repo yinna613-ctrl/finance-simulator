@@ -169,7 +169,7 @@
                     <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> 多標的投資組合與複利模擬器
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, NVDA）自動連線 API 計算真實歷史年化報酬率 (CAGR)</p>
+                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, 2454, NVDA），可自由調整年化報酬率 (CAGR)</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <button id="sync-invest-btn" class="px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg border border-indigo-500/30 cursor-pointer">平均平分長期儲蓄</button>
@@ -180,7 +180,7 @@
             <!-- Search Bar -->
             <div class="bg-slate-900 p-5 rounded-2xl border border-emerald-500/30">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入股票代號（例：0050, 00878, 2618, NVDA，按下 Enter 自動送出）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入股票代號（例：0050, 00878, 2618, 2454, NVDA，按下 Enter 送出）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
                     <button id="ai-analyze-btn" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
                         <i class="fa-solid fa-plus"></i> <span id="analyze-btn-text">抓取數據並加入組合</span>
                     </button>
@@ -281,17 +281,26 @@
     <!-- JavaScript Application Logic -->
     <script>
         const stockDatabase = {
-            "0050.TW": { name: "元大台灣50", cagr: 10.2, risk: "中風險" },
-            "0056.TW": { name: "元大高股息", cagr: 7.8, risk: "中低風險" },
-            "00878.TW": { name: "國泰永續高股息", cagr: 8.5, risk: "中低風險" },
-            "00919.TW": { name: "群益台灣精選高息", cagr: 9.0, risk: "中低風險" },
-            "2603.TW": { name: "長榮海運", cagr: 12.0, risk: "高風險" },
-            "2618.TW": { name: "長榮航", cagr: 11.5, risk: "中高風險" },
-            "2330.TW": { name: "台積電", cagr: 16.5, risk: "中高風險" },
-            "2353.TW": { name: "宏碁", cagr: 10.5, risk: "中風險" },
-            "2371.TW": { name: "大同", cagr: 11.2, risk: "中風險" },
-            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" },
-            "QQQ": { name: "納斯達克100 ETF", cagr: 13.5, risk: "中高風險" }
+            "0050.TW": { name: "元大台灣50", cagr: 10.2 },
+            "0056.TW": { name: "元大高股息", cagr: 7.8 },
+            "00878.TW": { name: "國泰永續高股息", cagr: 8.5 },
+            "00919.TW": { name: "群益台灣精選高息", cagr: 9.0 },
+            "2330.TW": { name: "台積電", cagr: 16.5 },
+            "2454.TW": { name: "聯發科", cagr: 15.2 },
+            "2317.TW": { name: "鴻海", cagr: 11.0 },
+            "2303.TW": { name: "聯電", cagr: 12.5 },
+            "2344.TW": { name: "華邦電", cagr: 10.8 },
+            "6770.TW": { name: "力積電", cagr: 8.5 },
+            "2603.TW": { name: "長榮海運", cagr: 12.0 },
+            "2618.TW": { name: "長榮航", cagr: 11.5 },
+            "2353.TW": { name: "宏碁", cagr: 10.5 },
+            "2371.TW": { name: "大同", cagr: 11.2 },
+            "2382.TW": { name: "廣達", cagr: 18.0 },
+            "3231.TW": { name: "緯創", cagr: 16.2 },
+            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0 },
+            "QQQ": { name: "納斯達克100 ETF", cagr: 13.5 },
+            "TSLA": { name: "特斯拉", cagr: 22.0 },
+            "AAPL": { name: "蘋果", cagr: 15.0 }
         };
 
         const defaultData = {
@@ -304,16 +313,16 @@
             investment: 10000,
             simYears: 20,
             assets: [
-                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 5000, cagr: 11.5, risk: "中高風險" },
-                { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
+                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 5000, cagr: 11.5 },
+                { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5 }
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v24')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v26')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v24', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v26', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -531,15 +540,12 @@
             document.getElementById('chart-pct-invest').textContent = pctInv + '%';
             document.getElementById('chart-pct-disposable').textContent = pctDisp + '%';
 
-            // 渲染獨立的 361 理財 Card 數據
             renderRule361Card(inc, exp, res, inv, disp);
-
             updateDoughnutChart(exp, res, inv, Math.max(0, disp));
             renderPortfolioList();
             updateGrowthSimulation();
         }
 
-        // 獨立 361 理財 Card 的渲染邏輯
         function renderRule361Card(inc, exp, res, inv, disp) {
             const container = document.getElementById('rule-361-content');
             if (inc <= 0) {
@@ -686,18 +692,21 @@
                 row.className = 'flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950 p-3 rounded-xl border border-emerald-500/30';
                 row.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
-                        <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
-                        <div class="relative group/cagr inline-block cursor-help">
-                            <span class="text-[11px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">CAGR: ${asset.cagr}% <i class="fa-solid fa-circle-info text-[9px]"></i></span>
-                            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/cagr:block w-60 p-2.5 bg-slate-900 border border-teal-500/40 rounded-xl text-[11px] text-slate-200 shadow-2xl z-20">
-                                📊 <strong>CAGR（複合年均成長率）</strong> 代表預期年化報酬率（含股息複利累積）。
-                            </div>
+                        <span class="font-black text-sm text-emerald-400 min-w-[65px]">${asset.ticker}</span>
+                        <span class="text-xs text-slate-300 font-bold min-w-[80px]">${asset.name}</span>
+                        
+                        <div class="flex items-center gap-1 bg-teal-500/10 border border-teal-500/30 px-2 py-0.5 rounded-full text-[11px] font-bold text-teal-300">
+                            <span>CAGR:</span>
+                            <input type="number" value="${asset.cagr || 10}" step="0.1" class="asset-cagr-input w-12 bg-transparent text-teal-300 font-extrabold focus:outline-none focus:border-b border-teal-400 text-center" data-index="${index}">
+                            <span>%</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between sm:justify-end gap-3">
-                        <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-36 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400" data-index="${index}">
-                        <button class="remove-asset-btn text-slate-500 hover:text-rose-400 p-1 cursor-pointer" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <div class="relative">
+                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">NT$</span>
+                            <input type="number" value="${asset.monthlyAmount || 0}" min="0" step="1000" class="asset-amount-input w-32 pl-8 pr-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500" data-index="${index}">
+                        </div>
+                        <button class="remove-asset-btn text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>
                 `;
                 container.appendChild(row);
@@ -710,6 +719,14 @@
                     state.assets[e.target.dataset.index].monthlyAmount = Number(e.target.value) || 0;
                     saveState();
                     document.getElementById('total-portfolio-monthly').textContent = formatMoney(getTotalPortfolioMonthly());
+                    updateGrowthSimulation();
+                });
+            });
+
+            document.querySelectorAll('.asset-cagr-input').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    state.assets[e.target.dataset.index].cagr = Number(e.target.value) || 0;
+                    saveState();
                     updateGrowthSimulation();
                 });
             });
@@ -769,6 +786,7 @@
             });
         }
 
+        // 核心搜尋與網路請求邏輯 (使用穩定 AllOrigins 代理)
         async function fetchAndAddAsset() {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
@@ -779,55 +797,66 @@
 
             btnText.innerText = "查詢中...";
             statusMsg.classList.remove('hidden');
-            statusMsg.innerText = `連線網路 API 查詢 ${formattedTicker} 過去 5 年數據...`;
+            statusMsg.innerText = `連線 AllOrigins 代理查詢 ${formattedTicker} 過去 5 年數據...`;
 
             let stockData = null;
 
-            try {
-                const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
+            // 1. 優先比對本地擴充資料庫
+            if (stockDatabase[formattedTicker]) {
+                stockData = {
+                    ticker: formattedTicker,
+                    name: stockDatabase[formattedTicker].name,
+                    cagr: stockDatabase[formattedTicker].cagr
+                };
+                statusMsg.innerText = `✅ 成功取得 ${stockData.name}，預設 CAGR 為 ${stockData.cagr}% (可在下方輸入框微調)`;
+            } else {
+                // 2. 本地庫沒有時，使用穩定 AllOrigins Proxy 代理進行連線
+                try {
+                    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
 
-                const response = await fetch(proxyUrl);
-                if (response.ok) {
-                    const outerData = await response.json();
-                    if (outerData.contents) {
-                        const data = JSON.parse(outerData.contents);
-                        const result = data.chart?.result?.[0];
+                    const response = await fetch(proxyUrl);
+                    if (response.ok) {
+                        const outerData = await response.json();
+                        if (outerData.contents) {
+                            const data = JSON.parse(outerData.contents);
+                            const result = data.chart?.result?.[0];
 
-                        if (result) {
-                            const meta = result.meta;
-                            const quotes = result.indicators?.quote?.[0]?.close || [];
-                            const validPrices = quotes.filter(p => p !== null && p > 0);
+                            if (result) {
+                                const meta = result.meta;
+                                const quotes = result.indicators?.quote?.[0]?.close || [];
+                                const validPrices = quotes.filter(p => p !== null && p > 0);
 
-                            if (validPrices.length >= 2) {
-                                const startPrice = validPrices[0];
-                                const endPrice = meta.regularMarketPrice || validPrices[validPrices.length - 1];
-                                let calculatedCagr = (Math.pow(endPrice / startPrice, 1 / 5) - 1) * 100;
-                                
-                                if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
-                                    stockData = {
-                                        ticker: formattedTicker,
-                                        name: stockDatabase[formattedTicker]?.name || meta.shortName || meta.symbol || formattedTicker,
-                                        cagr: Number(calculatedCagr.toFixed(1))
-                                    };
+                                if (validPrices.length >= 2) {
+                                    const startPrice = validPrices[0];
+                                    const endPrice = meta.regularMarketPrice || validPrices[validPrices.length - 1];
+                                    let calculatedCagr = (Math.pow(endPrice / startPrice, 1 / 5) - 1) * 100;
+                                    
+                                    if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
+                                        stockData = {
+                                            ticker: formattedTicker,
+                                            name: meta.shortName || meta.symbol || (formattedTicker.includes('.TW') ? '台股個股' : '海外資產'),
+                                            cagr: Number(calculatedCagr.toFixed(1))
+                                        };
+                                        statusMsg.innerText = `✅ AllOrigins 代理連線成功！取得 ${stockData.name}，計算 5 年 CAGR 為 ${stockData.cagr}%`;
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (err) {
+                    console.warn("AllOrigins 請求受限", err);
                 }
-            } catch (err) {
-                console.warn("API 請求受限，切換為備援庫", err);
-            }
 
-            if (!stockData) {
-                if (stockDatabase[formattedTicker]) {
-                    stockData = { ticker: formattedTicker, name: stockDatabase[formattedTicker].name, cagr: stockDatabase[formattedTicker].cagr };
-                } else {
-                    stockData = { ticker: formattedTicker, name: formattedTicker.includes('.TW') ? '台股個股' : '美股資產', cagr: 9.5 };
+                // 3. 備援預設模型
+                if (!stockData) {
+                    stockData = {
+                        ticker: formattedTicker,
+                        name: formattedTicker.includes('.TW') ? '台股個股' : '海外資產',
+                        cagr: 10.0
+                    };
+                    statusMsg.innerText = `ℹ️ 已新增 ${formattedTicker}，請直接在下方修改其 CAGR 年化報酬率。`;
                 }
-                statusMsg.innerText = `⚠️ 載入 ${formattedTicker} 資料庫備援試算數據。`;
-            } else {
-                statusMsg.innerText = `✅ API 成功取得 ${stockData.name}，計算 5 年真實 CAGR 為 ${stockData.cagr}%`;
             }
 
             const existing = state.assets.find(a => a.ticker.toUpperCase() === stockData.ticker);
@@ -907,7 +936,7 @@
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v24');
+            localStorage.removeItem('yinna_budget_state_v26');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
