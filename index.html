@@ -166,7 +166,7 @@
                     <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> 多標的投資組合與複利模擬器
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, NVDA）自動帶入歷史預估年化報酬率與資產成長</p>
+                    <p class="text-xs text-slate-400 mt-0.5">輸入台美股代號（如 00878, 2618, NVDA）自動連線 Yahoo Finance 取得真實 CAGR 與模擬資產成長</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <button id="sync-invest-btn" class="px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg border border-indigo-500/30 cursor-pointer">平均平分長期儲蓄</button>
@@ -177,11 +177,12 @@
             <!-- Search Bar -->
             <div class="bg-slate-900 p-5 rounded-2xl border border-emerald-500/30">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="ai-ticker-input" value="00878" placeholder="輸入股票代號（例：0050, 00878, 2618, NVDA）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
-                    <button id="ai-analyze-btn" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer">
-                        <i class="fa-solid fa-plus"></i> 加入組合
+                    <input type="text" id="ai-ticker-input" value="2618" placeholder="輸入股票代號（例：0050, 00878, 2618, NVDA）" class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                    <button id="ai-analyze-btn" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> <span id="analyze-btn-text">抓取數據並加入組合</span>
                     </button>
                 </div>
+                <p id="api-status-msg" class="text-[11px] text-slate-400 mt-2 hidden"></p>
             </div>
 
             <!-- Portfolio Rows -->
@@ -271,17 +272,14 @@
     <!-- JavaScript Application Logic -->
     <script>
         const stockDatabase = {
-            "0050": { name: "元大台灣50", cagr: 10.2, risk: "中風險" },
-            "0056": { name: "元大高股息", cagr: 7.8, risk: "中低風險" },
-            "00878": { name: "國泰永續高股息", cagr: 8.5, risk: "中低風險" },
-            "00919": { name: "群益台灣精選高息", cagr: 9.0, risk: "中低風險" },
-            "00929": { name: "復華台灣科技優息", cagr: 9.2, risk: "中風險" },
-            "2603": { name: "長榮海運", cagr: 12.0, risk: "高風險" },
-            "2618": { name: "長榮航", cagr: 11.5, risk: "中高風險" },
-            "2330": { name: "台積電", cagr: 16.5, risk: "中高風險" },
-            "2317": { name: "鴻海", cagr: 9.5, risk: "中風險" },
-            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" },
-            "QQQ": { name: "納斯達克100 ETF", cagr: 13.5, risk: "中高風險" }
+            "0050.TW": { name: "元大台灣50", cagr: 10.2, risk: "中風險" },
+            "0056.TW": { name: "元大高股息", cagr: 7.8, risk: "中低風險" },
+            "00878.TW": { name: "國泰永續高股息", cagr: 8.5, risk: "中低風險" },
+            "00919.TW": { name: "群益台灣精選高息", cagr: 9.0, risk: "中低風險" },
+            "2603.TW": { name: "長榮海運", cagr: 12.0, risk: "高風險" },
+            "2618.TW": { name: "長榮航", cagr: 11.5, risk: "中高風險" },
+            "2330.TW": { name: "台積電", cagr: 16.5, risk: "中高風險" },
+            "NVDA": { name: "輝達 (NVIDIA)", cagr: 25.0, risk: "高風險" }
         };
 
         const defaultData = {
@@ -291,8 +289,8 @@
             investment: 15000,
             simYears: 20,
             assets: [
-                { ticker: "0050", name: "元大台灣50", monthlyAmount: 10000, cagr: 10.2, risk: "中風險" },
-                { ticker: "00878", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
+                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 10000, cagr: 11.5, risk: "中高風險" },
+                { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
             ]
         };
 
@@ -477,7 +475,7 @@
                 const row = document.createElement('div');
                 row.className = 'flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950 p-3 rounded-xl border border-emerald-500/30';
                 row.innerHTML = `
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="font-black text-sm text-emerald-400 min-w-[60px]">${asset.ticker}</span>
                         <span class="text-xs text-slate-300 font-bold">${asset.name}</span>
                         <div class="relative group/cagr inline-block cursor-help">
@@ -561,39 +559,79 @@
             });
         }
 
-        document.getElementById('ai-analyze-btn').addEventListener('click', () => {
+        // Yahoo Finance API 查詢邏輯
+        document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
             const inputVal = document.getElementById('ai-ticker-input').value.trim().toUpperCase();
             if (!inputVal) return;
 
-            let name = "台美股標的";
-            let cagr = 10.0;
+            const formattedTicker = /^\d+$/.test(inputVal) ? `${inputVal}.TW` : inputVal;
+            const btnText = document.getElementById('analyze-btn-text');
+            const statusMsg = document.getElementById('api-status-msg');
 
-            if (stockDatabase[inputVal]) {
-                name = stockDatabase[inputVal].name;
-                cagr = stockDatabase[inputVal].cagr;
-            } else if (inputVal.startsWith("00")) {
-                name = "台股指數/高股息ETF";
-                cagr = 8.5;
-            } else if (!isNaN(inputVal)) {
-                name = "台股個股";
-                cagr = 11.0;
-            } else {
-                name = "美股/國際資產";
-                cagr = 13.0;
+            btnText.innerText = "查詢中...";
+            statusMsg.classList.remove('hidden');
+            statusMsg.innerText = `連線 Yahoo Finance 查詢 ${formattedTicker} 過去 5 年數據...`;
+
+            let stockData = null;
+
+            try {
+                const proxyUrl = 'https://corsproxy.io/?';
+                const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
+                
+                const response = await fetch(proxyUrl + encodeURIComponent(yahooUrl));
+                if (response.ok) {
+                    const data = await response.json();
+                    const result = data.chart?.result?.[0];
+
+                    if (result) {
+                        const meta = result.meta;
+                        const quotes = result.indicators?.quote?.[0]?.close || [];
+                        const validPrices = quotes.filter(p => p !== null && p > 0);
+
+                        if (validPrices.length >= 2) {
+                            const startPrice = validPrices[0];
+                            const endPrice = meta.regularMarketPrice || validPrices[validPrices.length - 1];
+                            let calculatedCagr = (Math.pow(endPrice / startPrice, 1 / 5) - 1) * 100;
+                            
+                            if (!isNaN(calculatedCagr) && calculatedCagr > -50 && calculatedCagr < 100) {
+                                stockData = {
+                                    ticker: formattedTicker,
+                                    name: meta.shortName || meta.symbol || formattedTicker,
+                                    cagr: Number(calculatedCagr.toFixed(1))
+                                };
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("API 請求限制，切換為備援庫", err);
             }
 
-            const existing = state.assets.find(a => a.ticker.toUpperCase() === inputVal);
+            if (!stockData) {
+                if (stockDatabase[formattedTicker]) {
+                    stockData = { ticker: formattedTicker, name: stockDatabase[formattedTicker].name, cagr: stockDatabase[formattedTicker].cagr };
+                } else {
+                    stockData = { ticker: formattedTicker, name: formattedTicker.includes('.TW') ? '台股標的' : '美股資產', cagr: 9.0 };
+                }
+                statusMsg.innerText = `⚠️ 已載入 ${formattedTicker} 預設數據。`;
+            } else {
+                statusMsg.innerText = `✅ Yahoo Finance 成功取得 ${stockData.name}，5年 CAGR 為 ${stockData.cagr}%`;
+            }
+
+            const existing = state.assets.find(a => a.ticker.toUpperCase() === stockData.ticker);
             if (!existing) {
                 state.assets.push({
-                    ticker: inputVal,
-                    name: name,
+                    ticker: stockData.ticker,
+                    name: stockData.name,
                     monthlyAmount: 5000,
-                    cagr: cagr
+                    cagr: stockData.cagr
                 });
                 saveState();
                 renderPortfolioList();
                 updateGrowthSimulation();
             }
+
+            btnText.innerText = "抓取數據並加入組合";
             document.getElementById('ai-ticker-input').value = '';
         });
 
