@@ -225,8 +225,9 @@
         </div>
     </div>
 
+    <!-- 固定支出 Modal (含金額與百分比同步) -->
     <div id="expense-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30 max-h-[90vh] flex flex-col">
+        <div class="glass-panel w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-rose-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
                 <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-receipt text-rose-400"></i> 固定必要支出管理</h3>
                 <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -239,8 +240,9 @@
         </div>
     </div>
 
+    <!-- 預備金 Modal (含金額與百分比同步) -->
     <div id="reserve-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 max-h-[90vh] flex flex-col">
+        <div class="glass-panel w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4 border border-amber-500/30 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
                 <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-vault text-amber-400"></i> 預備金撥入管理</h3>
                 <button class="close-modal-btn text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -297,11 +299,11 @@
             ]
         };
 
-        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v17')) || JSON.parse(JSON.stringify(defaultData));
+        let state = JSON.parse(localStorage.getItem('yinna_budget_state_v18')) || JSON.parse(JSON.stringify(defaultData));
         let allocationChart = null;
         let growthChart = null;
 
-        function saveState() { localStorage.setItem('yinna_budget_state_v17', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('yinna_budget_state_v18', JSON.stringify(state)); }
         function getTotalIncomes() { return state.incomes.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalExpenses() { return state.expenses.reduce((s, i) => s + (Number(i.amount)||0), 0); }
         function getTotalReserves() { return state.reserves.reduce((s, i) => s + (Number(i.amount)||0), 0); }
@@ -333,15 +335,24 @@
         function renderExpenseList() {
             const container = document.getElementById('expense-list');
             container.innerHTML = '';
+            const totalInc = getTotalIncomes();
+
             state.expenses.forEach((item, index) => {
+                const amount = Number(item.amount) || 0;
+                const pct = totalInc > 0 ? ((amount / totalInc) * 100).toFixed(1) : 0;
+
                 const row = document.createElement('div');
                 row.className = 'flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800';
                 row.innerHTML = `
                     <input type="text" value="${item.name}" placeholder="支出名稱" class="expense-name flex-1 bg-slate-950 border border-slate-700 px-3 py-2 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-rose-500" data-index="${index}">
                     <div class="flex items-center gap-2">
-                        <div class="relative flex-1 sm:w-36">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">NT$</span>
-                            <input type="number" value="${item.amount}" min="0" step="500" class="expense-amount w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-rose-400 focus:outline-none focus:border-rose-500" data-index="${index}">
+                        <div class="relative w-24">
+                            <input type="number" value="${pct}" min="0" max="100" step="0.5" class="expense-pct w-full pr-6 pl-2.5 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-rose-300 text-right focus:outline-none focus:border-rose-500" data-index="${index}">
+                            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">%</span>
+                        </div>
+                        <div class="relative w-32">
+                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">NT$</span>
+                            <input type="number" value="${amount}" min="0" step="500" class="expense-amount w-full pl-8 pr-2.5 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-rose-400 focus:outline-none focus:border-rose-500" data-index="${index}">
                         </div>
                         <button class="delete-expense-btn text-slate-400 hover:text-rose-400 p-2 bg-slate-800/80 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer flex-shrink-0" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>
@@ -355,15 +366,24 @@
         function renderReserveList() {
             const container = document.getElementById('reserve-list');
             container.innerHTML = '';
+            const totalInc = getTotalIncomes();
+
             state.reserves.forEach((item, index) => {
+                const amount = Number(item.amount) || 0;
+                const pct = totalInc > 0 ? ((amount / totalInc) * 100).toFixed(1) : 0;
+
                 const row = document.createElement('div');
                 row.className = 'flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800';
                 row.innerHTML = `
                     <input type="text" value="${item.name}" placeholder="預備金名稱" class="reserve-name flex-1 bg-slate-950 border border-slate-700 px-3 py-2 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500" data-index="${index}">
                     <div class="flex items-center gap-2">
-                        <div class="relative flex-1 sm:w-36">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">NT$</span>
-                            <input type="number" value="${item.amount}" min="0" step="500" class="reserve-amount w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-amber-400 focus:outline-none focus:border-amber-500" data-index="${index}">
+                        <div class="relative w-24">
+                            <input type="number" value="${pct}" min="0" max="100" step="0.5" class="reserve-pct w-full pr-6 pl-2.5 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-amber-300 text-right focus:outline-none focus:border-amber-500" data-index="${index}">
+                            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">%</span>
+                        </div>
+                        <div class="relative w-32">
+                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[11px]">NT$</span>
+                            <input type="number" value="${amount}" min="0" step="500" class="reserve-amount w-full pl-8 pr-2.5 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-bold text-amber-400 focus:outline-none focus:border-amber-500" data-index="${index}">
                         </div>
                         <button class="delete-reserve-btn text-slate-400 hover:text-rose-400 p-2 bg-slate-800/80 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer flex-shrink-0" data-index="${index}"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>
@@ -382,13 +402,85 @@
 
         function attachExpenseEvents() {
             document.querySelectorAll('.expense-name').forEach(el => { el.addEventListener('input', (e) => { state.expenses[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
-            document.querySelectorAll('.expense-amount').forEach(el => { el.addEventListener('input', (e) => { state.expenses[e.target.dataset.index].amount = Number(e.target.value) || 0; saveState(); document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses()); updateAllUI(); }); });
+            
+            // 金額輸入 -> 計算百分比
+            document.querySelectorAll('.expense-amount').forEach(el => { 
+                el.addEventListener('input', (e) => { 
+                    const idx = e.target.dataset.index;
+                    const amt = Number(e.target.value) || 0;
+                    state.expenses[idx].amount = amt; 
+                    saveState(); 
+
+                    const totalInc = getTotalIncomes();
+                    const pctEl = document.querySelectorAll('.expense-pct')[idx];
+                    if (pctEl) pctEl.value = totalInc > 0 ? ((amt / totalInc) * 100).toFixed(1) : 0;
+
+                    document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses()); 
+                    updateAllUI(); 
+                }); 
+            });
+
+            // 百分比輸入 -> 計算金額
+            document.querySelectorAll('.expense-pct').forEach(el => { 
+                el.addEventListener('input', (e) => { 
+                    const idx = e.target.dataset.index;
+                    const pct = Number(e.target.value) || 0;
+                    const totalInc = getTotalIncomes();
+                    const calculatedAmt = Math.round((totalInc * pct) / 100);
+
+                    state.expenses[idx].amount = calculatedAmt;
+                    saveState();
+
+                    const amtEl = document.querySelectorAll('.expense-amount')[idx];
+                    if (amtEl) amtEl.value = calculatedAmt;
+
+                    document.getElementById('modal-subtotal-expenses').textContent = formatMoney(getTotalExpenses()); 
+                    updateAllUI(); 
+                }); 
+            });
+
             document.querySelectorAll('.delete-expense-btn').forEach(el => { el.addEventListener('click', (e) => { state.expenses.splice(e.currentTarget.dataset.index, 1); saveState(); renderExpenseList(); updateAllUI(); }); });
         }
 
         function attachReserveEvents() {
             document.querySelectorAll('.reserve-name').forEach(el => { el.addEventListener('input', (e) => { state.reserves[e.target.dataset.index].name = e.target.value; saveState(); updateAllUI(); }); });
-            document.querySelectorAll('.reserve-amount').forEach(el => { el.addEventListener('input', (e) => { state.reserves[e.target.dataset.index].amount = Number(e.target.value) || 0; saveState(); document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves()); updateAllUI(); }); });
+            
+            // 金額輸入 -> 計算百分比
+            document.querySelectorAll('.reserve-amount').forEach(el => { 
+                el.addEventListener('input', (e) => { 
+                    const idx = e.target.dataset.index;
+                    const amt = Number(e.target.value) || 0;
+                    state.reserves[idx].amount = amt; 
+                    saveState(); 
+
+                    const totalInc = getTotalIncomes();
+                    const pctEl = document.querySelectorAll('.reserve-pct')[idx];
+                    if (pctEl) pctEl.value = totalInc > 0 ? ((amt / totalInc) * 100).toFixed(1) : 0;
+
+                    document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves()); 
+                    updateAllUI(); 
+                }); 
+            });
+
+            // 百分比輸入 -> 計算金額
+            document.querySelectorAll('.reserve-pct').forEach(el => { 
+                el.addEventListener('input', (e) => { 
+                    const idx = e.target.dataset.index;
+                    const pct = Number(e.target.value) || 0;
+                    const totalInc = getTotalIncomes();
+                    const calculatedAmt = Math.round((totalInc * pct) / 100);
+
+                    state.reserves[idx].amount = calculatedAmt;
+                    saveState();
+
+                    const amtEl = document.querySelectorAll('.reserve-amount')[idx];
+                    if (amtEl) amtEl.value = calculatedAmt;
+
+                    document.getElementById('modal-subtotal-reserves').textContent = formatMoney(getTotalReserves()); 
+                    updateAllUI(); 
+                }); 
+            });
+
             document.querySelectorAll('.delete-reserve-btn').forEach(el => { el.addEventListener('click', (e) => { state.reserves.splice(e.currentTarget.dataset.index, 1); saveState(); renderReserveList(); updateAllUI(); }); });
         }
 
@@ -578,7 +670,6 @@
             let stockData = null;
 
             try {
-                // 使用 AllOrigins API 作為高穩定代理連線
                 const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${formattedTicker}?range=5y&interval=1mo`;
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
 
@@ -686,7 +777,7 @@
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            localStorage.removeItem('yinna_budget_state_v17');
+            localStorage.removeItem('yinna_budget_state_v18');
             state = JSON.parse(JSON.stringify(defaultData));
             updateAllUI();
         });
