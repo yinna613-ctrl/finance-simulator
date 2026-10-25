@@ -297,10 +297,7 @@
             reserves: [{ id: 1, name: "緊急預備金", amount: 5000 }],
             investment: 15000,
             simYears: 20,
-            assets: [
-                { ticker: "2618.TW", name: "長榮航", monthlyAmount: 10000, cagr: 11.5, risk: "中高風險" },
-                { ticker: "00878.TW", name: "國泰永續高股息", monthlyAmount: 5000, cagr: 8.5, risk: "中低風險" }
-            ]
+            
         };
 
         let state = JSON.parse(localStorage.getItem('yinna_budget_state_v28')) || JSON.parse(JSON.stringify(defaultData));
@@ -640,7 +637,7 @@
                     label: '長期投資', 
                     value: inv, 
                     color: '#6366f1',
-                    subItems: state.assets.map(a => ({ name: `${a.ticker} (${a.name})`, amount: Number(a.monthlyAmount)||0 }))
+                    }))
                 },
                 { 
                     label: '自由零用', 
